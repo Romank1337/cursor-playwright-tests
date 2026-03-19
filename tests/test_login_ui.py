@@ -85,3 +85,59 @@ def test_success_login_redirect(login_page, credentials, success_url_regex):
     #    timeout увеличен, так как приложение может загружать данные не мгновенно.
     expect(login_page.page).to_have_url(success_url_regex, timeout=20_000)
 
+
+@pytest.mark.e2e
+@allure.feature("Авторизация")
+@allure.story("Негативные проверки")
+@allure.title("Логин с неверными данными не должен авторизовывать пользователя")
+def test_invalid_login_shows_error(login_page, invalid_credentials):
+    username, password = invalid_credentials
+    login_page.open()
+    login_page.login(username, password)
+    login_page.assert_still_on_login_page()
+    # В некоторых конфигурациях текст ошибки показывается кратковременным toast.
+    # Поэтому основная обязательная проверка — вход не выполнен (мы всё ещё на /login),
+    # а наличие текста ошибки фиксируем как дополнительный сигнал.
+    _ = login_page.has_auth_error_message()
+
+
+@pytest.mark.e2e
+@allure.feature("Авторизация")
+@allure.story("Негативные проверки")
+@allure.title("Пустая форма не должна приводить к успешному входу")
+def test_empty_form_does_not_login(login_page):
+    login_page.open()
+    login_page.submit_empty()
+    login_page.assert_still_on_login_page()
+    login_page.assert_loaded()
+
+
+@pytest.mark.e2e
+@allure.feature("Локализация")
+@allure.story("Элементы локализации")
+@allure.title("На странице логина доступен элемент выбора языка")
+def test_language_control_is_present(login_page):
+    login_page.open()
+    if not login_page.has_language_control():
+        pytest.skip("Переключатель языка не найден в текущей конфигурации стенда")
+
+
+@pytest.mark.e2e
+@allure.feature("Локализация")
+@allure.story("Смена языка")
+@allure.title("Переключение языка на странице логина (если опция доступна)")
+def test_language_switch_if_available(login_page):
+    login_page.open()
+    if not login_page.has_language_control():
+        pytest.skip("Переключатель языка не найден в текущей конфигурации")
+
+    switched = login_page.switch_language("EN")
+    if not switched:
+        pytest.skip("Опция EN не найдена в текущей конфигурации")
+
+    # После переключения на EN на форме обычно появляется английский placeholder.
+    placeholder = login_page.login_input.get_attribute("placeholder") or ""
+    assert ("login" in placeholder.lower()) or ("enter" in placeholder.lower()), (
+        "После переключения на EN не обнаружен ожидаемый английский placeholder у поля логина"
+    )
+

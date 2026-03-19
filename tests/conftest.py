@@ -36,6 +36,13 @@ def credentials() -> tuple[str, str]:
 
 
 @pytest.fixture(scope="session")
+def invalid_credentials() -> tuple[str, str]:
+    username = _env("TEST_INVALID_LOGIN", "wrong_user")
+    password = _env("TEST_INVALID_PASSWORD", "wrong_pass")
+    return username or "wrong_user", password or "wrong_pass"
+
+
+@pytest.fixture(scope="session")
 def success_url_regex() -> re.Pattern[str]:
     pattern = _env(
         "SUCCESS_URL_REGEX",
