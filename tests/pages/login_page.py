@@ -41,6 +41,11 @@ class LoginPage:
         ).first
 
     @property
+    def language_select(self):
+        # Языковой селект на форме логина (например, "RU Русский").
+        return self.page.locator(".ant-select-selector:visible").first
+
+    @property
     def language_badge(self):
         # Текущий язык на форме (например, RU/EN).
         return self.page.locator("text=/\\b(RU|EN)\\b/").first
@@ -86,22 +91,74 @@ class LoginPage:
     def has_language_control(self) -> bool:
         # На некоторых конфигурациях язык видно сразу, на некоторых — через кнопку настроек.
         self.page.wait_for_timeout(200)
+        if self.language_select.count() > 0:
+            return True
         return self.language_badge.count() > 0 or self.settings_button.count() > 0
+
+    def current_language(self) -> str | None:
+        # Возвращает текущую локаль из badge (RU/EN), если удалось определить.
+        raw = ""
+        if self.language_select.count() > 0:
+            raw = (self.language_select.first.inner_text() or "").strip().upper()
+        elif self.language_badge.count() > 0:
+            raw = (self.language_badge.first.inner_text() or "").strip().upper()
+
+        if "RU" in raw:
+            return "RU"
+        if "EN" in raw:
+            return "EN"
+        return None
+
+    def login_placeholder(self) -> str:
+        return (self.login_input.get_attribute("placeholder") or "").strip()
 
     def switch_language(self, target: str) -> bool:
         """
         Пытается переключить язык на target (`RU` или `EN`).
         Возвращает True, если удалось кликнуть по нужной опции.
         """
-        if self.settings_button.count() > 0:
+        # На этом UI селект языка может быть скрыт до клика по кнопке настроек.
+        if self.language_select.count() == 0 and self.settings_button.count() > 0:
             self.settings_button.click()
-            self.page.wait_for_timeout(200)
+            self.page.wait_for_timeout(250)
 
-        option = self.page.get_by_text(target, exact=True).first
-        if option.count() == 0:
+        if self.language_select.count() == 0:
+            return False
+
+        self.language_select.click()
+        self.page.wait_for_timeout(250)
+
+        # Пытаемся кликнуть видимую опцию языка из выпадающего списка.
+        # На реальных стендах подписи могут быть RU/EN или Русский/English.
+        synonyms = {
+            "EN": ["EN", "English", "Английский"],
+            "RU": ["RU", "Русский", "Russian"],
+        }
+        labels = synonyms.get(target.upper(), [target])
+
+        candidates = [
+            self.page.locator(".ant-select-item-option-content:visible"),
+            self.page.get_by_role("option"),
+            self.page.locator(".ant-select-item-option:visible"),
+        ]
+
+        option = None
+        for pool in candidates:
+            for i in range(pool.count()):
+                cand = pool.nth(i)
+                txt = (cand.inner_text() or "").strip()
+                if not txt:
+                    continue
+                if any(lbl.lower() in txt.lower() for lbl in labels) and cand.is_visible():
+                    option = cand
+                    break
+            if option is not None:
+                break
+
+        if option is None:
             return False
 
         option.click()
-        self.page.wait_for_timeout(300)
+        self.page.wait_for_timeout(500)
         return True
 

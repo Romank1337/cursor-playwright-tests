@@ -126,7 +126,7 @@ def test_language_control_is_present(login_page):
 @allure.feature("Локализация")
 @allure.story("Смена языка")
 @allure.title("Переключение языка на странице логина (если опция доступна)")
-def test_language_switch_if_available(login_page):
+def test_language_switch_if_available(login_page, language_login_placeholder_en_regex):
     login_page.open()
     if not login_page.has_language_control():
         pytest.skip("Переключатель языка не найден в текущей конфигурации")
@@ -135,9 +135,51 @@ def test_language_switch_if_available(login_page):
     if not switched:
         pytest.skip("Опция EN не найдена в текущей конфигурации")
 
-    # После переключения на EN на форме обычно появляется английский placeholder.
-    placeholder = login_page.login_input.get_attribute("placeholder") or ""
-    assert ("login" in placeholder.lower()) or ("enter" in placeholder.lower()), (
-        "После переключения на EN не обнаружен ожидаемый английский placeholder у поля логина"
+    en_placeholder = login_page.login_placeholder()
+    assert language_login_placeholder_en_regex.match(en_placeholder), (
+        f"После переключения на EN placeholder логина не выглядит английским: {en_placeholder!r}"
     )
+
+
+@pytest.mark.e2e
+@allure.feature("Локализация")
+@allure.story("Смена языка")
+@allure.title("Переключение EN -> RU меняет placeholder обратно")
+def test_language_switch_back_to_ru(login_page, language_login_placeholder_ru_regex):
+    login_page.open()
+    if not login_page.has_language_control():
+        pytest.skip("Переключатель языка не найден в текущей конфигурации")
+
+    if not login_page.switch_language("EN"):
+        pytest.skip("Опция EN не найдена в текущей конфигурации")
+    if not login_page.switch_language("RU"):
+        pytest.skip("Опция RU не найдена в текущей конфигурации")
+
+    ru_placeholder = login_page.login_placeholder()
+    assert language_login_placeholder_ru_regex.match(ru_placeholder), (
+        f"После переключения обратно на RU placeholder логина не выглядит русским: {ru_placeholder!r}"
+    )
+
+
+@pytest.mark.e2e
+@allure.feature("Локализация")
+@allure.story("Сохранение языка")
+@allure.title("Выбранный язык сохраняется после обновления страницы")
+def test_language_persists_after_reload(login_page):
+    login_page.open()
+    if not login_page.has_language_control():
+        pytest.skip("Переключатель языка не найден в текущей конфигурации")
+
+    if not login_page.switch_language("EN"):
+        pytest.skip("Опция EN не найдена в текущей конфигурации")
+
+    before_reload = login_page.current_language()
+    login_page.page.reload(wait_until="domcontentloaded")
+    after_reload = login_page.current_language()
+
+    # Проверка мягкая: если badge доступен, он должен совпасть.
+    if before_reload and after_reload:
+        assert before_reload == after_reload == "EN", (
+            f"Ожидали сохранение EN после refresh, получили before={before_reload}, after={after_reload}"
+        )
 

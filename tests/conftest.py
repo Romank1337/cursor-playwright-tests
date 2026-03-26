@@ -55,3 +55,15 @@ def success_url_regex() -> re.Pattern[str]:
 def login_page(page, login_url: str) -> LoginPage:
     return LoginPage(page=page, login_url=login_url)
 
+
+@pytest.fixture(scope="session")
+def language_login_placeholder_en_regex() -> re.Pattern[str]:
+    pattern = _env("LANG_LOGIN_PLACEHOLDER_EN_REGEX", r".*(login|username|user name|email).*")
+    return re.compile(pattern, re.I)
+
+
+@pytest.fixture(scope="session")
+def language_login_placeholder_ru_regex() -> re.Pattern[str]:
+    pattern = _env("LANG_LOGIN_PLACEHOLDER_RU_REGEX", r".*(логин|пользоват|введите).*")
+    return re.compile(pattern, re.I)
+
