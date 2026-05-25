@@ -9,3 +9,23 @@ allure-report/
 *.pyo
 *.pyd
 
+# Локальные артефакты разведки UI (скриншоты, JSON)
+tools/_probe/
+
+# Браузерные/MCP логи и временные дампы
+.playwright-mcp/
+lern_UI_TESTS/.playwright-mcp/
+
+# Скриншоты-артефакты отладки в корне репозитория
+/devices-dom-inspect.png
+/devices-section.png
+/probe-device-actions.png
+
+# Большие технические логи прогона
+lern_API_TESTS/test_run_responses.log
+
+# Локальные .env с секретами
+.env
+lern_API_TESTS/.env
+lern_UI_TESTS/.env
+
