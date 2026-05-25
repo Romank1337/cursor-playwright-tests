@@ -8,9 +8,12 @@ import re
 import pytest
 from playwright.sync_api import sync_playwright
 
+from tests.pages.devices_page import DevicesPage
 from tests.pages.login_page import LoginPage
 from tests.pages.machine_params_page import MachineParamsPage
 from tests.pages.page_factory import PageFactory
+from tests.pages.personnel_page import PersonnelPage
+from tests.pages.production_units_page import ProductionUnitsPage
 from tests.pages.roles_page import RolesPage
 
 
@@ -76,6 +79,13 @@ def credentials() -> tuple[str, str]:
 
 
 @pytest.fixture(scope="session")
+def invalid_credentials() -> tuple[str, str]:
+    username = _env("TEST_INVALID_LOGIN", "wrong_user")
+    password = _env("TEST_INVALID_PASSWORD", "wrong_pass")
+    return username or "wrong_user", password or "wrong_pass"
+
+
+@pytest.fixture(scope="session")
 def success_url_regex() -> re.Pattern[str]:
     pattern = _env(
         "SUCCESS_URL_REGEX",
@@ -97,4 +107,52 @@ def machine_params_page(page, machine_params_url: str) -> MachineParamsPage:
 @pytest.fixture()
 def roles_page(page, roles_url: str) -> RolesPage:
     return PageFactory.roles_page(page=page, roles_url=roles_url)
+
+
+@pytest.fixture()
+def devices_page(page, login_url: str, credentials: tuple[str, str]) -> DevicesPage:
+    username, password = credentials
+    return DevicesPage(page=page, login_url=login_url, username=username, password=password)
+
+
+@pytest.fixture()
+def personnel_page(page, login_url: str, credentials: tuple[str, str]) -> PersonnelPage:
+    username, password = credentials
+    return PersonnelPage(page=page, login_url=login_url, username=username, password=password)
+
+
+@pytest.fixture()
+def production_units_page(page, login_url: str, credentials: tuple[str, str]) -> ProductionUnitsPage:
+    username, password = credentials
+    return ProductionUnitsPage(page=page, login_url=login_url, username=username, password=password)
+
+
+@pytest.fixture(scope="session")
+def language_login_placeholder_en_regex() -> re.Pattern[str]:
+    pattern = _env("LANG_LOGIN_PLACEHOLDER_EN_REGEX", r".*(login|username|user name|email).*")
+    return re.compile(pattern, re.I)
+
+
+@pytest.fixture(scope="session")
+def language_login_placeholder_ru_regex() -> re.Pattern[str]:
+    pattern = _env("LANG_LOGIN_PLACEHOLDER_RU_REGEX", r".*(логин|пользоват|введите).*")
+    return re.compile(pattern, re.I)
+
+
+@pytest.fixture(scope="session")
+def run_destructive_devices_crud() -> bool:
+    # По умолчанию выключено: чтобы не удалить реальные данные на стенде.
+    return (_env("RUN_DESTRUCTIVE_DEVICES_CRUD", "false") or "false").lower() in {"1", "true", "yes"}
+
+
+@pytest.fixture(scope="session")
+def run_destructive_personnel_crud() -> bool:
+    # По умолчанию выключено: чтобы не удалить реальные данные на стенде.
+    return (_env("RUN_DESTRUCTIVE_PERSONNEL_CRUD", "false") or "false").lower() in {"1", "true", "yes"}
+
+
+@pytest.fixture(scope="session")
+def run_destructive_production_units_crud() -> bool:
+    # По умолчанию выключено: создание/удаление production unit затрагивает справочник.
+    return (_env("RUN_DESTRUCTIVE_PRODUCTION_UNITS_CRUD", "false") or "false").lower() in {"1", "true", "yes"}
 
