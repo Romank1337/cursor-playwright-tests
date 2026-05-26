@@ -9,6 +9,8 @@ import allure
 import pytest
 from playwright.sync_api import expect
 
+from tests.testit_compat import testit
+
 
 def _attach_ui_state(page, name: str) -> None:
     allure.attach(page.url, name=f"{name}:url", attachment_type=allure.attachment_type.TEXT)
@@ -20,9 +22,19 @@ def _attach_ui_state(page, name: str) -> None:
 
 
 @pytest.mark.e2e
+@testit.nameSpace("UI/Smoke")
+@testit.className("MachineStates")
+@testit.externalId("ui.machine_params.state_full_crud")
+@testit.displayName("CRUD: создать/редактировать/удалить состояние оборудования")
 @allure.feature("Параметры оборудования")
 @allure.story("Создание состояния")
 @allure.title("Пользователь может создать новое состояние на странице machineParams")
+@allure.description(
+    "Полный CRUD-цикл для состояний оборудования (вкладка 'Состояния' страницы machineParams): "
+    "логин → RU → переход на /list/machineParams → создать состояние 'auto-<unix-ts>' "
+    "(тип = 'Состояние') → проверить → отредактировать имя на 'redact-auto-<unix-ts>' → "
+    "проверить → удалить (подтвердить 'Да') → проверить отсутствие."
+)
 def test_create_new_machine_state(login_page, machine_params_page, credentials):
     username, password = credentials
     unique_state_name = f"auto-{int(time.time())}"

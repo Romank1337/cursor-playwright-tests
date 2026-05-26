@@ -12,11 +12,18 @@ import allure
 import pytest
 from playwright.sync_api import expect
 
+from tests.testit_compat import testit
+
 
 @pytest.mark.e2e
+@testit.nameSpace("UI/Smoke")
+@testit.className("Devices")
+@testit.externalId("ui.devices.page_opened")
+@testit.displayName("Раздел Devices открывается и показывает базовые контролы")
 @allure.feature("Справочники")
 @allure.story("Devices / Read")
 @allure.title("Раздел Devices открывается и показывает базовые контролы")
+@allure.description("Smoke-проверка раздела Directories → Devices: страница открывается, видны базовые кнопки (Create и т.п.). Запускается перед основными CRUD-сценариями раздела.")
 def test_devices_page_opened(devices_page):
     with allure.step("Открыть раздел Directories -> Devices"):
         devices_page.open()
@@ -25,9 +32,14 @@ def test_devices_page_opened(devices_page):
 
 
 @pytest.mark.e2e
+@testit.nameSpace("UI/Smoke")
+@testit.className("Devices")
+@testit.externalId("ui.devices.create_form_has_required_fields")
+@testit.displayName("Форма создания устройства открывается и содержит обязательные поля")
 @allure.feature("Справочники")
 @allure.story("Devices / Create")
 @allure.title("Форма создания устройства открывается и содержит обязательные поля")
+@allure.description("Открываем форму New device и проверяем наличие обязательных контролов (Name, UID, Comment, тип устройства). Без сохранения — проверка только структуры формы.")
 def test_devices_create_form_has_required_fields(devices_page):
     with allure.step("Открыть раздел Devices"):
         devices_page.open()
@@ -46,9 +58,14 @@ def test_devices_create_form_has_required_fields(devices_page):
 
 
 @pytest.mark.e2e
+@testit.nameSpace("UI/Smoke")
+@testit.className("Devices")
+@testit.externalId("ui.devices.update_form_fields_editable")
+@testit.displayName("В форме устройства можно изменять редактируемые поля")
 @allure.feature("Справочники")
 @allure.story("Devices / Update")
 @allure.title("В форме устройства можно изменять редактируемые поля")
+@allure.description("Заполняем редактируемые поля формы устройства (Name, UID, Comment) уникальными значениями и проверяем, что инпуты приняли ввод. Поле IP должно оставаться read-only/disabled — оно вычисляется сервером.")
 def test_devices_update_form_fields_editable(devices_page):
     with allure.step("Открыть раздел Devices"):
         devices_page.open()
@@ -81,9 +98,14 @@ def test_devices_update_form_fields_editable(devices_page):
 
 
 @pytest.mark.e2e
+@testit.nameSpace("UI/Smoke")
+@testit.className("Devices")
+@testit.externalId("ui.devices.list_has_rows_and_clickable")
+@testit.displayName("Список устройств отображается и позволяет открыть запись")
 @allure.feature("Справочники")
 @allure.story("Devices / Read")
 @allure.title("Список устройств отображается и позволяет открыть запись")
+@allure.description("Проверяем, что в таблице есть хотя бы одна запись и по ней можно кликнуть — открывается карточка. Если список пуст, тест предварительно создаёт seed-устройство, чтобы проверка была воспроизводима.")
 def test_devices_list_has_rows_and_row_is_clickable(devices_page):
     with allure.step("Открыть раздел Devices"):
         devices_page.open()
@@ -122,9 +144,14 @@ def test_devices_list_has_rows_and_row_is_clickable(devices_page):
 
 
 @pytest.mark.e2e
+@testit.nameSpace("UI/Smoke")
+@testit.className("Devices")
+@testit.externalId("ui.devices.create_cancel_closes_form")
+@testit.displayName("Отмена создания устройства закрывает форму без сохранения")
 @allure.feature("Справочники")
 @allure.story("Devices / Create")
 @allure.title("Отмена создания устройства закрывает форму без сохранения")
+@allure.description("Открываем форму, заполняем тестовыми данными и нажимаем Cancel. Проверяем, что форма закрылась (инпуты не видны), и запись не сохранилась. Защищает от регресса, когда форма «висит» после отмены.")
 def test_devices_create_cancel_closes_form(devices_page):
     with allure.step("Открыть раздел Devices"):
         devices_page.open()
@@ -154,9 +181,14 @@ def test_devices_create_cancel_closes_form(devices_page):
 
 
 @pytest.mark.e2e
+@testit.nameSpace("UI/Smoke")
+@testit.className("Devices")
+@testit.externalId("ui.devices.full_crud_destructive_flagged")
+@testit.displayName("CRUD: создать устройство и удалить это же устройство")
 @allure.feature("Справочники")
 @allure.story("Devices / Create + Delete One")
 @allure.title("CRUD: создать устройство и удалить это же устройство")
+@allure.description("Полный CRUD-цикл: создаём уникальное устройство, проверяем его в списке, удаляем. Под флагом RUN_DESTRUCTIVE_DEVICES_CRUD=true — реально подтверждает удаление и проверяет, что записи больше нет. Без флага — отменяет диалог удаления и проверяет, что запись осталась.")
 def test_devices_full_crud_destructive_flagged(devices_page, run_destructive_devices_crud):
     with allure.step("Открыть раздел Devices"):
         devices_page.open()

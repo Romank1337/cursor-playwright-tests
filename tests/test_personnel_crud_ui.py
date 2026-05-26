@@ -7,8 +7,14 @@ import time
 import allure
 import pytest
 
+from tests.testit_compat import testit
+
 
 @pytest.mark.e2e
+@testit.nameSpace("UI/Smoke")
+@testit.className("Personnel")
+@testit.externalId("ui.personnel.full_crud_destructive_flagged")
+@testit.displayName("CRUD: создать тестового сотрудника и удалить его")
 @allure.feature("Справочники")
 @allure.story("Personnel / Full CRUD")
 @allure.title("CRUD: создать тестового сотрудника и удалить его")

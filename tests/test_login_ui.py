@@ -13,6 +13,8 @@ import allure
 import pytest
 from playwright.sync_api import expect
 
+from tests.testit_compat import testit
+
 # Важно:
 # - тесты специально написаны на уровне "действие -> проверка",
 #   чтобы бизнес-сценарий читался без знания DOM/селекторов;
@@ -20,6 +22,10 @@ from playwright.sync_api import expect
 
 
 @pytest.mark.e2e
+@testit.nameSpace("UI/Smoke")
+@testit.className("Login")
+@testit.externalId("ui.login.page_opened")
+@testit.displayName("Страница авторизации открывается и показывает основные элементы")
 @allure.feature("Авторизация")
 @allure.story("Открытие страницы логина")
 @allure.title("Страница авторизации открывается и показывает основные элементы")
@@ -46,6 +52,10 @@ def test_login_page_opened(login_page):
 
 
 @pytest.mark.e2e
+@testit.nameSpace("UI/Smoke")
+@testit.className("Login")
+@testit.externalId("ui.login.password_field_type")
+@testit.displayName("Поле пароля имеет тип password")
 @allure.feature("Авторизация")
 @allure.story("Проверка поля пароля")
 @allure.title("Поле пароля имеет тип password")
@@ -69,6 +79,10 @@ def test_password_field_type_is_password(login_page):
 
 
 @pytest.mark.e2e
+@testit.nameSpace("UI/Smoke")
+@testit.className("Login")
+@testit.externalId("ui.login.success_redirect")
+@testit.displayName("После успешного логина происходит редирект на рабочую страницу")
 @allure.feature("Авторизация")
 @allure.story("Успешный вход")
 @allure.title("После успешного логина происходит редирект на рабочую страницу")
@@ -102,6 +116,10 @@ def test_success_login_redirect(login_page, credentials, success_url_regex):
 
 
 @pytest.mark.e2e
+@testit.nameSpace("UI/Smoke")
+@testit.className("Login")
+@testit.externalId("ui.login.invalid_shows_error")
+@testit.displayName("Логин с неверными данными не должен авторизовывать пользователя")
 @allure.feature("Авторизация")
 @allure.story("Негативные проверки")
 @allure.title("Логин с неверными данными не должен авторизовывать пользователя")
@@ -123,6 +141,10 @@ def test_invalid_login_shows_error(login_page, invalid_credentials):
 
 
 @pytest.mark.e2e
+@testit.nameSpace("UI/Smoke")
+@testit.className("Login")
+@testit.externalId("ui.login.empty_form_rejected")
+@testit.displayName("Пустая форма не должна приводить к успешному входу")
 @allure.feature("Авторизация")
 @allure.story("Негативные проверки")
 @allure.title("Пустая форма не должна приводить к успешному входу")
@@ -138,6 +160,10 @@ def test_empty_form_does_not_login(login_page):
 
 
 @pytest.mark.e2e
+@testit.nameSpace("UI/Smoke")
+@testit.className("Login")
+@testit.externalId("ui.login.language_control_present")
+@testit.displayName("На странице логина доступен элемент выбора языка")
 @allure.feature("Локализация")
 @allure.story("Элементы локализации")
 @allure.title("На странице логина доступен элемент выбора языка")
@@ -152,6 +178,10 @@ def test_language_control_is_present(login_page):
 
 
 @pytest.mark.e2e
+@testit.nameSpace("UI/Smoke")
+@testit.className("Login")
+@testit.externalId("ui.login.language_switch_to_en")
+@testit.displayName("Переключение языка на странице логина (если опция доступна)")
 @allure.feature("Локализация")
 @allure.story("Смена языка")
 @allure.title("Переключение языка на странице логина (если опция доступна)")
@@ -178,6 +208,10 @@ def test_language_switch_if_available(login_page, language_login_placeholder_en_
 
 
 @pytest.mark.e2e
+@testit.nameSpace("UI/Smoke")
+@testit.className("Login")
+@testit.externalId("ui.login.language_switch_back_to_ru")
+@testit.displayName("Переключение EN -> RU меняет placeholder обратно")
 @allure.feature("Локализация")
 @allure.story("Смена языка")
 @allure.title("Переключение EN -> RU меняет placeholder обратно")
@@ -203,6 +237,10 @@ def test_language_switch_back_to_ru(login_page, language_login_placeholder_ru_re
 
 
 @pytest.mark.e2e
+@testit.nameSpace("UI/Smoke")
+@testit.className("Login")
+@testit.externalId("ui.login.language_persists_after_reload")
+@testit.displayName("Выбранный язык сохраняется после обновления страницы")
 @allure.feature("Локализация")
 @allure.story("Сохранение языка")
 @allure.title("Выбранный язык сохраняется после обновления страницы")

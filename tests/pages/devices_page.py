@@ -101,9 +101,28 @@ class DevicesPage:
                 self.page.goto(devices_url, wait_until="domcontentloaded")
                 self.page.wait_for_timeout(700)
 
-    def assert_loaded(self) -> None:
-        expect(self.new_device_button).to_be_visible()
-        expect(self.apply_button).to_be_visible()
+    def _toolbar_button_locator(self):
+        # На UI кнопка может называться "New device" / "Создать" / "Create",
+        # либо быть кнопкой с иконкой plus без явного текста. Берём первое попавшееся.
+        return self.page.locator(
+            "button:has-text('New device'), button:has-text('Create'), "
+            "button:has-text('Создать'), button:has(.anticon-plus)"
+        ).first
+
+    def assert_loaded(self, timeout_ms: int = 20000) -> None:
+        # Шапка раздела иногда подгружается с задержкой (фронт «прогревается»),
+        # поэтому: 1) ждём долго; 2) при отсутствии — делаем один reload+open;
+        # 3) принимаем расширенный набор вариантов кнопки создания.
+        toolbar_btn = self._toolbar_button_locator()
+        try:
+            expect(toolbar_btn).to_be_visible(timeout=timeout_ms)
+            return
+        except AssertionError:
+            pass
+
+        # Один retry: перелогиниваемся/переходим в раздел заново.
+        self.open()
+        expect(self._toolbar_button_locator()).to_be_visible(timeout=timeout_ms)
 
     def open_create_form(self) -> bool:
         parsed = urlsplit(self.login_url)

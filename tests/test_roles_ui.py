@@ -9,6 +9,8 @@ import allure
 import pytest
 from playwright.sync_api import expect
 
+from tests.testit_compat import testit
+
 
 def _attach_ui_state(page, name: str) -> None:
     allure.attach(page.url, name=f"{name}:url", attachment_type=allure.attachment_type.TEXT)
@@ -20,9 +22,19 @@ def _attach_ui_state(page, name: str) -> None:
 
 
 @pytest.mark.e2e
+@testit.nameSpace("UI/Smoke")
+@testit.className("Roles")
+@testit.externalId("ui.roles.full_crud")
+@testit.displayName("CRUD: создать/редактировать/удалить роль работника")
 @allure.feature("Справочники")
 @allure.story("Справочник ролей")
 @allure.title("Пользователь может создать новую роль через модальное окно")
+@allure.description(
+    "Полный CRUD-цикл для справочника ролей (Worker Roles): "
+    "логин → переключение языка на RU → переход на /list/workerRoles → "
+    "создать роль 'auto-role-<unix-ts>' → проверить наличие → отредактировать → "
+    "проверить → удалить → проверить отсутствие."
+)
 def test_create_role(login_page, roles_page, credentials):
     username, password = credentials
     unique_role_name = f"auto-role-{int(time.time())}"

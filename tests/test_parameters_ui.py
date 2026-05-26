@@ -9,6 +9,8 @@ import allure
 import pytest
 from playwright.sync_api import expect
 
+from tests.testit_compat import testit
+
 
 def _attach_ui_state(page, name: str) -> None:
     allure.attach(page.url, name=f"{name}:url", attachment_type=allure.attachment_type.TEXT)
@@ -21,9 +23,20 @@ def _attach_ui_state(page, name: str) -> None:
 
 @pytest.mark.e2e
 @pytest.mark.parameters
+@testit.nameSpace("UI/Smoke")
+@testit.className("Parameters")
+@testit.externalId("ui.machine_params.parameter_full_crud")
+@testit.displayName("CRUD: создать/редактировать/удалить параметр оборудования")
 @allure.feature("Параметры оборудования")
 @allure.story("Вкладка Параметры")
 @allure.title("Пользователь может открыть вкладку Параметры на странице machineParams")
+@allure.description(
+    "Полный CRUD-цикл для параметров оборудования (вкладка 'Параметры' страницы machineParams): "
+    "логин → RU → переход на /list/machineParams → открыть вкладку 'Параметры' → "
+    "создать параметр 'auto-param-<unix-ts>' (Единицы измерения = 'шт', Способ визуализации = 'Линейный') → "
+    "проверить → отредактировать имя на 'redact-auto-param-<unix-ts>' → проверить → удалить → "
+    "проверить отсутствие."
+)
 def test_parameters(login_page, machine_params_page, credentials):
     username, password = credentials
     unique_parameter_name = f"auto-param-{int(time.time())}"

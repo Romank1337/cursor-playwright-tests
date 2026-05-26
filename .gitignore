@@ -21,11 +21,12 @@ lern_UI_TESTS/.playwright-mcp/
 /devices-section.png
 /probe-device-actions.png
 
-# Большие технические логи прогона
-lern_API_TESTS/test_run_responses.log
+# Артефакты прогонов: JUnit XML, логи pytest, MD-отчёты
+reports/
 
 # Локальные .env с секретами
 .env
-lern_API_TESTS/.env
-lern_UI_TESTS/.env
+
+# Локальная конфигурация Test IT (содержит privateToken)
+connection_config.ini
 

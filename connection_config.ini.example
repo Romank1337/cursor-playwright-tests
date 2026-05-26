@@ -1,0 +1,31 @@
+; Шаблон конфигурации адаптера Test IT (testit-adapter-pytest).
+; Скопируйте файл в connection_config.ini и подставьте реальные значения,
+; либо передавайте параметры через переменные окружения
+; (TMS_URL, TMS_PRIVATE_TOKEN, TMS_PROJECT_ID, TMS_CONFIGURATION_ID, TMS_TEST_RUN_ID).
+;
+; ВАЖНО: connection_config.ini с реальным privateToken не коммитим (см. .gitignore).
+
+[testit]
+; URL self-hosted инстанса Test IT
+url = https://testit.zyfra.com
+
+; Private token из профиля пользователя (Profile -> API Keys)
+privateToken = REPLACE_ME
+
+; GUID проекта в Test IT - проект MDC (globalId 3117)
+projectId = 4974a48f-041b-44ac-a42e-ebab5bb3a74b
+
+; GUID конфигурации - узнается одной командой, см. README раздел "Test IT"
+configurationId = REPLACE_ME
+
+; ID существующего TestRun. Оставьте пустым,
+; если хотите, чтобы адаптер сам создал новый прогон.
+testRunId =
+
+; true - адаптер сам создаст автотесты и привяжет их к WorkItem
+automaticCreationTestCases = true
+automaticUpdationLinksToTestCases = true
+
+; Только для self-hosted с self-signed сертификатом
+certValidation = false
+tlsVerify = false
