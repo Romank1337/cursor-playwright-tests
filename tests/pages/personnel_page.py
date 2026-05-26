@@ -366,13 +366,19 @@ class PersonnelPage:
         self.page.wait_for_timeout(700)
         return self.current_person_id()
 
+    # Селектор всех типов строк, в которых может появиться сотрудник: AntD-таблица, AntD-list, MUI-таблица.
+    _ROW_TYPES = ".ant-list-item, .ant-table-tbody tr, .MuiTableBody-root tr"
+
     def person_exists(self, person_name: str) -> bool:
         self.page.wait_for_timeout(600)
-        return self.page.locator(".ant-list-item, .ant-table-tbody tr", has_text=person_name).count() > 0
+        return self.page.locator(self._ROW_TYPES, has_text=person_name).count() > 0
 
     def person_exists_in_table(self, person_id: str | None, *keys: str) -> bool:
         # Начинаем с первой страницы пагинации, чтобы не пропустить запись.
-        first_page = self.page.locator(".ant-pagination-item-1, .ant-pagination-item[title='1']").first
+        first_page = self.page.locator(
+            ".ant-pagination-item-1, .ant-pagination-item[title='1'], "
+            ".MuiPagination-ul li button[aria-label*='page 1']"
+        ).first
         if first_page.count() > 0 and first_page.is_visible():
             first_page.click(force=True)
             self.page.wait_for_timeout(500)
@@ -381,19 +387,21 @@ class PersonnelPage:
         if person_id:
             by_id = self.page.locator(
                 f".ant-table-tbody tr:has(a[href*='/list/personnel/{person_id}']), "
-                f".ant-list-item:has(a[href*='/list/personnel/{person_id}'])"
+                f".ant-list-item:has(a[href*='/list/personnel/{person_id}']), "
+                f".MuiTableBody-root tr:has(a[href*='/list/personnel/{person_id}'])"
             )
             if by_id.count() > 0:
                 return True
         for key in keys:
-            if key and self.page.locator(".ant-list-item, .ant-table-tbody tr", has_text=key).count() > 0:
+            if key and self.page.locator(self._ROW_TYPES, has_text=key).count() > 0:
                 return True
 
-        # Полный проход по страницам пагинации.
+        # Полный проход по страницам пагинации (AntD и MUI).
         for _ in range(100):
             next_btn = self.page.locator(
                 ".ant-pagination-next:not(.ant-pagination-disabled) button, "
-                ".ant-pagination-next:not(.ant-pagination-disabled)"
+                ".ant-pagination-next:not(.ant-pagination-disabled), "
+                ".MuiPagination-ul li button[aria-label*='next']:not([disabled])"
             ).first
             if next_btn.count() == 0 or not next_btn.is_visible():
                 break
@@ -402,12 +410,13 @@ class PersonnelPage:
             if person_id:
                 by_id = self.page.locator(
                     f".ant-table-tbody tr:has(a[href*='/list/personnel/{person_id}']), "
-                    f".ant-list-item:has(a[href*='/list/personnel/{person_id}'])"
+                    f".ant-list-item:has(a[href*='/list/personnel/{person_id}']), "
+                    f".MuiTableBody-root tr:has(a[href*='/list/personnel/{person_id}'])"
                 )
                 if by_id.count() > 0:
                     return True
             for key in keys:
-                if key and self.page.locator(".ant-list-item, .ant-table-tbody tr", has_text=key).count() > 0:
+                if key and self.page.locator(self._ROW_TYPES, has_text=key).count() > 0:
                     return True
         return False
 
@@ -528,8 +537,16 @@ class PersonnelPage:
         return f"/list/personnel/{person_id}" in self.page.url
 
     def delete_person_from_list_via_toolbar(
-        self, person_id: str, person_name: str, personnel_number: str | None = None
+        self,
+        person_id: str,
+        person_name: str,
+        personnel_number: str | None = None,
+        confirm: bool = True,
     ) -> bool:
+        # confirm=True  (по умолчанию): destructive-режим — подтверждает удаление и возвращает True,
+        #                               только если запись реально удалилась.
+        # confirm=False: non-destructive — только открывает диалог удаления и возвращает True, если
+        #                                  диалог появился. Решение «cancel/confirm» оставляем тесту.
         print(f"[DEBUG delete] start person_id={person_id} person_name={person_name} personnel_number={personnel_number}")
         if "/list/personnel" not in self.page.url or re.search(r"/list/personnel/\d+", self.page.url):
             parsed = urlsplit(self.login_url)
@@ -576,60 +593,59 @@ class PersonnelPage:
         row.scroll_into_view_if_needed()
         print("[DEBUG delete] row found and visible")
 
-        # Приоритет: точный селектор чекбокса из шапки, который ты прислал.
-        header_checkbox = self.page.locator(
-            "[id^='rc-tabs-'][id$='-panel-Personnel'] > div > div:nth-child(2) > "
-            "div.MuiPaper-root.MuiPaper-elevation.MuiPaper-rounded.MuiPaper-elevation2.css-1dfwvih > "
-            "div.MuiTableContainer-root.index_tableContainer-full__e-HcA.css-116o2u8 > table > thead > tr > "
-            "th.MuiTableCell-root.MuiTableCell-head.MuiTableCell-stickyHeader.MuiTableCell-alignLeft.MuiTableCell-sizeMedium.css-mfdvyk > "
-            "div > div.Mui-TableHeadCell-Content-Labels.MuiBox-root.css-68rqdf > div > div > div.index_defaultButtons__S0Oo- > span > input"
-        ).first
-        if header_checkbox.count() == 0:
-            header_checkbox = self.page.locator(
-                "[id^='rc-tabs-'][id$='-panel-Personnel'] table thead th input.PrivateSwitchBase-input[type='checkbox']"
-            ).first
-        if header_checkbox.count() > 0 and header_checkbox.is_visible():
-            print("[DEBUG delete] header checkbox found")
-            try:
-                header_checkbox.check(force=True)
-            except Exception:
-                header_checkbox.click(force=True)
-            self.page.wait_for_timeout(300)
-            try:
-                if header_checkbox.is_checked():
-                    print("[DEBUG delete] header checkbox checked")
-                    row_checkbox = header_checkbox
-                else:
-                    print("[DEBUG delete] header checkbox not checked after click")
-                    row_checkbox = row.locator("input[type='checkbox']").first
-            except Exception:
-                print("[DEBUG delete] header checkbox check-state exception")
-                row_checkbox = row.locator("input[type='checkbox']").first
-        else:
-            print("[DEBUG delete] header checkbox not found, fallback to row checkbox")
-            row_checkbox = row.locator(
-            "input[aria-label='Переключить выбор строки'], "
-            "input[aria-label*='Переключить выбор'], "
-            "input[aria-label*='Toggle select row'], "
-            "input.PrivateSwitchBase-input[data-indeterminate], "
-            "input.PrivateSwitchBase-input.css-j8yymo, "
-            "td:nth-child(2) div div span input[type='checkbox'], "
-            "td:nth-child(2) span input[type='checkbox'], "
-            "input[type='checkbox']"
-            ).first
-        if row_checkbox.count() == 0 or not row_checkbox.is_visible():
+        # ВАЖНО: в текущей MUI-вёрстке Personnel чекбоксы имеют opacity:0 до тех пор,
+        # пока пользователь не наведётся/кликнет на одну из строк таблицы (см. tools/_probe_personnel_dom.py:
+        # «Visible checkboxes after row click: 19» — до этого 0).
+        # Стратегия: активируем строку → берём header-чекбокс «Toggle select all», он отметит ВСЕ
+        # видимые строки (после search-фильтра остаётся только наша целевая запись).
+        try:
+            row.hover()
+        except Exception:
+            pass
+        self.page.wait_for_timeout(250)
+        try:
+            row.click(force=True)
+        except Exception:
+            pass
+        self.page.wait_for_timeout(400)
+        print(
+            "[DEBUG delete] visible checkboxes on page after row activation: "
+            f"{self.page.locator('input[type=checkbox]:visible').count()}"
+        )
+
+        # Сначала пробуем checkbox внутри строки.
+        row_checkbox = row.locator("input[type='checkbox']").first
+        if row_checkbox.count() == 0:
+            xpath_any = row.locator("xpath=.//input[@type='checkbox']").first
+            if xpath_any.count() > 0:
+                row_checkbox = xpath_any
+
+        if row_checkbox.count() == 0:
+            # Фолбэк: используем header-чекбокс «Toggle select all».
+            # После search осталась только наша запись, поэтому select-all = выбор именно нашей строки.
+            print("[DEBUG delete] no checkbox inside row, falling back to header 'Toggle select all'")
             row_checkbox = self.page.locator(
-                ".ant-table-tbody tr.ant-table-row-selected input[aria-label='Переключить выбор строки'], "
-                ".ant-table-tbody tr input[aria-label='Переключить выбор строки']"
+                "input[aria-label='Toggle select all'], "
+                "input[aria-label='Выделить все'], "
+                "thead th input.PrivateSwitchBase-input[type='checkbox'], "
+                ".MuiTableHead-root input[type='checkbox']"
             ).first
-            if row_checkbox.count() == 0 or not row_checkbox.is_visible():
-                print("[DEBUG delete] row checkbox not found/visible")
+            if row_checkbox.count() == 0:
+                print("[DEBUG delete] header 'Toggle select all' not found either")
                 return False
-        print("[DEBUG delete] row checkbox found")
+        print(f"[DEBUG delete] checkbox found (count={row_checkbox.count()})")
         try:
             row_checkbox.check(force=True)
         except Exception:
-            row_checkbox.click(force=True)
+            try:
+                row_checkbox.click(force=True)
+            except Exception:
+                try:
+                    row_checkbox.evaluate(
+                        "el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); }"
+                    )
+                except Exception:
+                    pass
         self.page.wait_for_timeout(300)
         # XPath-фолбэк: если чекбокс не отмечен, кликаем чекбокс ТОЛЬКО в пределах найденной строки.
         try:
@@ -666,6 +682,11 @@ class PersonnelPage:
         self.page.wait_for_timeout(300)
 
         had_dialog = self.delete_dialog_visible()
+        if not confirm:
+            # Non-destructive ветка: возвращаем сразу, как только убедились в появлении диалога.
+            # Cancel и проверка «запись осталась» — на стороне теста.
+            print(f"[DEBUG delete] confirm=False, had_dialog={had_dialog}")
+            return had_dialog
         self.confirm_delete_dialog_if_visible()
         self.apply_changes_if_present()
         self.page.wait_for_timeout(900)
@@ -763,6 +784,86 @@ class PersonnelPage:
 
         search_button.click(force=True)
         self.page.wait_for_timeout(900)
+
+    def trigger_delete_dialog_on_person_card(self, person_id: str) -> bool:
+        # Открывает карточку сотрудника по id и кликает delete-икон на ней.
+        # НЕ подтверждает и НЕ отменяет — возвращает True, если после клика появился модальный диалог.
+        # Используется как фолбэк, если path через чекбокс в списке не отработал.
+        parsed = urlsplit(self.login_url)
+        base = f"{parsed.scheme}://{parsed.netloc}"
+        self.page.goto(f"{base}/list/personnel/{person_id}", wait_until="domcontentloaded")
+        self.page.wait_for_timeout(1500)
+        print(f"[DEBUG trigger-card] url={self.page.url}")
+
+        candidates = (
+            ("svg-delete-path", self.page.locator("button:has(svg path[d*='M10 2a1 1 0 0 1 1 1v1h3'])").first),
+            ("role-Delete", self.page.get_by_role("button", name="Delete").first),
+            ("role-Удалить", self.page.get_by_role("button", name="Удалить").first),
+            ("has-text-Delete-or-Удалить", self.page.locator("button:has-text('Delete'), button:has-text('Удалить')").first),
+            ("ant-btn-dangerous-not-disabled", self.page.locator("button.ant-btn-dangerous:not([disabled])").first),
+            ("anticon-delete", self.page.locator("button:has(.anticon-delete)").first),
+            ("MUI-IconButton-with-delete-svg", self.page.locator("button.MuiIconButton-root:has(svg[data-testid*='Delete'])").first),
+        )
+        for name, btn in candidates:
+            try:
+                cnt = btn.count()
+            except Exception:
+                cnt = 0
+            visible = False
+            if cnt > 0:
+                try:
+                    visible = btn.is_visible()
+                except Exception:
+                    visible = False
+            print(f"[DEBUG trigger-card] candidate={name} count={cnt} visible={visible}")
+            if cnt == 0 or not visible:
+                continue
+            try:
+                btn.click(timeout=3000)
+            except Exception:
+                btn.click(force=True)
+            self.page.wait_for_timeout(700)
+            if self.delete_dialog_visible():
+                print(f"[DEBUG trigger-card] dialog opened via {name}")
+                return True
+        return False
+
+    def cancel_delete_dialog_if_visible(self) -> bool:
+        # Закрывает открытый диалог удаления через Cancel/Отмена/крестик.
+        # Возвращает True, если что-то реально кликнули.
+        modal = self.page.locator(".ant-modal:visible, [role='dialog']:visible").first
+        if modal.count() == 0:
+            # Ничего не открыто — считаем, что и закрывать нечего.
+            return False
+
+        # 1) Текстовая кнопка Cancel/Отмена/No внутри футера модалки.
+        cancel_in_footer = self.page.locator(
+            ".ant-modal-footer button:has-text('Cancel'), "
+            ".ant-modal-footer button:has-text('Отмена'), "
+            ".ant-modal-footer button:has-text('No'), "
+            ".ant-modal-footer button:has-text('Нет')"
+        ).first
+        if cancel_in_footer.count() > 0 and cancel_in_footer.is_visible():
+            cancel_in_footer.click(force=True)
+            self.page.wait_for_timeout(300)
+            return True
+
+        # 2) Любая видимая Cancel-кнопка на странице (фолбэк, если футер свёрстан нестандартно).
+        for text in ("Cancel", "Отмена", "No", "Нет"):
+            btn = self.page.get_by_text(text, exact=True)
+            if btn.count() > 0 and btn.first.is_visible():
+                btn.first.click(force=True)
+                self.page.wait_for_timeout(300)
+                return True
+
+        # 3) Крестик закрытия модалки (.ant-modal-close).
+        close_btn = self.page.locator(".ant-modal-close").first
+        if close_btn.count() > 0 and close_btn.is_visible():
+            close_btn.click(force=True)
+            self.page.wait_for_timeout(300)
+            return True
+
+        return False
 
     def confirm_delete_dialog_if_visible(self) -> None:
         modal = self.page.locator(".ant-modal:visible, [role='dialog']:visible").first
