@@ -111,7 +111,7 @@ class LoginPage:
     def has_auth_error_message(self) -> bool:
         # Проверка на типовое сообщение об ошибке авторизации.
         # В разных сборках это может быть toast/alert и текст может немного отличаться.
-        self.page.wait_for_timeout(700)
+        self.page.wait_for_timeout(2_000)
         error_candidates = [
             self.page.get_by_text(re.compile(r"неверн.*(парол|имя|данн)", re.I)),
             self.page.get_by_text(re.compile(r"(invalid|wrong).*(password|user|credential)", re.I)),

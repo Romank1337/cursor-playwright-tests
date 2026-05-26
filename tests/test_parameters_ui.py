@@ -20,11 +20,11 @@ def _attach_ui_state(page, name: str) -> None:
 
 
 @pytest.mark.e2e
-@pytest.mark.parameteres
+@pytest.mark.parameters
 @allure.feature("Параметры оборудования")
 @allure.story("Вкладка Параметры")
 @allure.title("Пользователь может открыть вкладку Параметры на странице machineParams")
-def test_parameteres(login_page, machine_params_page, credentials):
+def test_parameters(login_page, machine_params_page, credentials):
     username, password = credentials
     unique_parameter_name = f"auto-param-{int(time.time())}"
     edited_parameter_name = f"redact-{unique_parameter_name}"
@@ -43,16 +43,16 @@ def test_parameteres(login_page, machine_params_page, credentials):
 
         with allure.step("Выполнить вход под тестовым пользователем"):
             login_page.login(username, password)
-            login_page.page.wait_for_timeout(10_000)
+            login_page.page.wait_for_timeout(2_000)
 
         with allure.step("Проверить, что вход выполнен"):
             if "/user/login" in login_page.page.url.lower():
                 # Фолбэк только если действительно остались на форме логина.
-                expect(login_page.login_input).to_be_visible(timeout=20_000)
-                expect(login_page.password_input).to_be_visible(timeout=20_000)
+                expect(login_page.login_input).to_be_visible(timeout=2_000)
+                expect(login_page.password_input).to_be_visible(timeout=2_000)
                 with allure.step("Повторить вход c логином admin"):
                     login_page.login("admin", password)
-                    login_page.page.wait_for_timeout(10_000)
+                    login_page.page.wait_for_timeout(2_000)
             _attach_ui_state(login_page.page, "after_login")
 
     with allure.step("Открытие страницы machineParams"):
@@ -98,7 +98,7 @@ def test_parameteres(login_page, machine_params_page, credentials):
 
         with allure.step("Заполнить форму и сохранить параметр"):
             parameter_form.create_parameter(unique_parameter_name)
-            machine_params_page.page.wait_for_timeout(10_000)
+            machine_params_page.page.wait_for_timeout(2_000)
             _attach_ui_state(machine_params_page.page, "after_parameter_save")
 
     with allure.step("Проверка нового параметра"):
@@ -113,7 +113,7 @@ def test_parameteres(login_page, machine_params_page, credentials):
 
         with allure.step(f"Изменить имя параметра на '{edited_parameter_name}' и сохранить"):
             edit_form.edit_parameter_name(edited_parameter_name)
-            machine_params_page.page.wait_for_timeout(10_000)
+            machine_params_page.page.wait_for_timeout(2_000)
             _attach_ui_state(machine_params_page.page, "after_parameter_edit_save")
 
     with allure.step("Проверка отредактированного параметра"):
@@ -123,8 +123,7 @@ def test_parameteres(login_page, machine_params_page, credentials):
 
     with allure.step("Удаление отредактированного параметра"):
         with allure.step(f"Выделить '{edited_parameter_name}' и нажать Удалить"):
-            machine_params_page.open_parameters_tab()
-            machine_params_page.delete_state(edited_parameter_name)
+            machine_params_page.delete_parameter(edited_parameter_name)
             _attach_ui_state(machine_params_page.page, "after_parameter_delete_click")
 
         with allure.step("Проверить, что параметр удален"):

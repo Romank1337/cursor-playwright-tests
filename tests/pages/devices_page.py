@@ -20,11 +20,22 @@ class DevicesPage:
 
     @property
     def new_device_button(self):
-        return self.page.get_by_text("New device", exact=True)
+        # Поддерживаем обе локали интерфейса (EN/RU).
+        return self.page.locator(
+            "button:has-text('New device'), button:has-text('Новое устройство'), "
+            "button:has-text('Создать устройство'), button:has-text('Новый')"
+        ).first.or_(self.page.get_by_text("New device", exact=True)).or_(
+            self.page.get_by_text("Новое устройство", exact=True)
+        ).first
 
     @property
     def apply_button(self):
-        return self.page.get_by_text("Apply", exact=True)
+        # Поддерживаем обе локали интерфейса (EN/RU).
+        return self.page.locator(
+            "button:has-text('Apply'), button:has-text('Применить')"
+        ).first.or_(self.page.get_by_text("Apply", exact=True)).or_(
+            self.page.get_by_text("Применить", exact=True)
+        ).first
 
     @property
     def delete_all_button(self):

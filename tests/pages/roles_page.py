@@ -148,6 +148,12 @@ class RolesPage:
         ).first
         expect(yes_button).to_be_visible(timeout=20_000)
         yes_button.click(force=True)
+        # Активно ждём закрытия диалога — это сигнал, что бэкенд принял запрос на удаление.
+        try:
+            expect(confirm_dialog).to_be_hidden(timeout=10_000)
+        except Exception:
+            yes_button.click(force=True)
+            expect(confirm_dialog).to_be_hidden(timeout=10_000)
         self.page.wait_for_timeout(2_000)
 
     def assert_role_not_visible(self, role_name: str) -> None:

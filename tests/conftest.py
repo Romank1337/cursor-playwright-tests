@@ -37,7 +37,7 @@ def browser_context_args() -> dict:
 def browser():
     # Локальная замена pytest-playwright browser fixture.
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False, slow_mo=200)
+        browser = p.chromium.launch(headless=True)
         yield browser
         browser.close()
 
