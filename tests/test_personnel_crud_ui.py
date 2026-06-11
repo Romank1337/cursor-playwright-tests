@@ -19,11 +19,11 @@ from tests.testit_compat import testit
 @allure.story("Personnel / Full CRUD")
 @allure.title("CRUD: создать тестового сотрудника и удалить его")
 @allure.description(
-    "Создаем тестового сотрудника, проверяем его наличие в общем списке Personnel и пробуем удалить через "
-    "чекбокс + кнопку Delete. По умолчанию (RUN_DESTRUCTIVE_PERSONNEL_CRUD=false) тест только открывает "
-    "диалог удаления, нажимает Cancel и проверяет, что запись осталась — это безопасный режим. "
-    "Если флаг включён, тест действительно удаляет созданного сотрудника и проверяет, что карточка по id "
-    "больше не открывается."
+    "Сценарий создания и удаления сотрудника в справочнике Personnel: авторизация → "
+    "/list/personnel?tab=Personnel → создать с фамилией 'AUTOLAST-<unix-ts>' и табельным номером "
+    "'AUTOLAST-<ts>' (#PersonnelEditor_Number) → Save + Apply → найти в списке → "
+    "при RUN_DESTRUCTIVE_PERSONNEL_CRUD=true удалить через чекбокс + Delete на тулбаре; "
+    "при false (по умолчанию) открыть диалог удаления → Cancel → запись остаётся."
 )
 def test_personnel_full_crud_destructive_flagged(personnel_page, run_destructive_personnel_crud):
     with allure.step("Открыть раздел Personnel"):

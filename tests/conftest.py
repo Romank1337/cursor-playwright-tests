@@ -36,8 +36,10 @@ def browser_context_args() -> dict:
 @pytest.fixture(scope="session")
 def browser():
     # Локальная замена pytest-playwright browser fixture.
+    # HEADLESS=false | 0 | no — видимый браузер (для отладки на стенде).
+    headless = (_env("HEADLESS", "true") or "true").lower() not in {"0", "false", "no"}
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(headless=headless)
         yield browser
         browser.close()
 

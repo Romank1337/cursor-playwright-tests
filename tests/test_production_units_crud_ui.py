@@ -1,8 +1,13 @@
 """
-CRUD-проверки: Production structure → Production units.
+CRUD-проверки: Production structure → Production units (legacy).
+
+Временно исключены из прогона маркером `production_units_legacy` (см. pytest.ini).
+Запуск только legacy: pytest -m production_units_legacy tests/test_production_units_crud_ui.py
 
 Деструктивное удаление управляется фикстурой `run_destructive_production_units_crud`
 (переменная окружения RUN_DESTRUCTIVE_PRODUCTION_UNITS_CRUD).
+
+Новый CRUD-сценарий: tests/test_production_units_crud.py (ProductionUnitsCRUD).
 """
 
 from __future__ import annotations
@@ -17,6 +22,7 @@ from tests.testit_compat import testit
 
 
 @pytest.mark.e2e
+@pytest.mark.production_units_legacy
 @testit.nameSpace("UI/Smoke")
 @testit.className("ProductionUnits")
 @testit.externalId("ui.production_units.page_opened")
@@ -33,6 +39,7 @@ def test_production_units_page_opened(production_units_page):
 
 
 @pytest.mark.e2e
+@pytest.mark.production_units_legacy
 @testit.nameSpace("UI/Smoke")
 @testit.className("ProductionUnits")
 @testit.externalId("ui.production_units.create_form_has_required_fields")
@@ -56,6 +63,7 @@ def test_production_units_create_form_has_required_fields(production_units_page)
 
 
 @pytest.mark.e2e
+@pytest.mark.production_units_legacy
 @testit.nameSpace("UI/Smoke")
 @testit.className("ProductionUnits")
 @testit.externalId("ui.production_units.create_cancel_if_available")
@@ -82,6 +90,7 @@ def test_production_units_create_cancel_if_available(production_units_page):
 
 
 @pytest.mark.e2e
+@pytest.mark.production_units_legacy
 @testit.nameSpace("UI/Smoke")
 @testit.className("ProductionUnits")
 @testit.externalId("ui.production_units.table_visible")
@@ -91,13 +100,16 @@ def test_production_units_create_cancel_if_available(production_units_page):
 @allure.title("Таблица production units отрисована")
 @allure.description("Проверяем, что список production units рендерится как MUI-таблица (table.MuiTable-root) с tbody. Считаем количество строк и проверяем, что значение неотрицательное (пустой список также допустим).")
 def test_production_units_table_visible(production_units_page):
-    production_units_page.open()
-    rows = production_units_page.page.locator("table.MuiTable-root tbody tr").count()
-    allure.attach(str(rows), "tbody row count", allure.attachment_type.TEXT)
-    assert rows >= 0
+    with allure.step("Открыть раздел Production units"):
+        production_units_page.open()
+    with allure.step("Проверить, что таблица production units отрисована"):
+        rows = production_units_page.page.locator("table.MuiTable-root tbody tr").count()
+        allure.attach(str(rows), "tbody row count", allure.attachment_type.TEXT)
+        assert rows >= 0
 
 
 @pytest.mark.e2e
+@pytest.mark.production_units_legacy
 @testit.nameSpace("UI/Smoke")
 @testit.className("ProductionUnits")
 @testit.externalId("ui.production_units.update_name_after_create")
@@ -136,6 +148,7 @@ def test_production_units_update_name_after_create(production_units_page):
 
 
 @pytest.mark.e2e
+@pytest.mark.production_units_legacy
 @testit.nameSpace("UI/Smoke")
 @testit.className("ProductionUnits")
 @testit.externalId("ui.production_units.full_crud_destructive_flagged")

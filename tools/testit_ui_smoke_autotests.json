@@ -322,37 +322,97 @@
       { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
     ]
   },
+  {
+    "externalId": "ui.devices_crud.full_crud",
+    "pytestId": "tests.test_devices_crud::test_devices_crud",
+    "classname": "DevicesCRUD",
+    "displayName": "Создать устройство, переименовать и удалить",
+    "description": "Полный CRUD устройства (DevicesCRUD): логин → переключение языка на RU → /list/devices → создать с Name = 'auto-device-<unix-ts>', UID = 'auto-uid-<ts>', Type (AntD/native Select) → get_by_text('Save'/'Сохранить') + Apply → проверить в .ant-list-item и форме (#control-device_*) → переименовать Name → удалить кнопкой в строке списка (фолбэк: открыть запись + Delete) → подтвердить → Apply → проверить отсутствие в списке.",
+    "setup": [
+      { "title": "Стенд доступен", "description": "https://localhost:8001/user/login возвращает 200." },
+      { "title": "Существует пользователь Admin/123", "description": "Либо TEST_USER_LOGIN/TEST_USER_PASSWORD." },
+      { "title": "Раздел Devices доступен", "description": "URL: https://localhost:8001/list/devices. Список — .ant-list-item с кнопкой создания New device / Новое устройство / Создать." }
+    ],
+    "steps": [
+      { "title": "Сгенерировать тестовые данные", "description": "suffix = str(int(time.time())); unique_name = f'auto-device-{suffix}'; unique_uid = f'auto-uid-{suffix}'; renamed_name = f'redact-auto-device-{suffix}'. allure.dynamic.parameter сохраняет значения в отчёт." },
+      { "title": "Открыть страницу логина", "description": "login_page.open() → goto https://localhost:8001/user/login." },
+      { "title": "Переключить язык интерфейса на RU", "description": "login_page.switch_language_to_russian() — нужен для кнопок «Создать»/«Сохранить»/«Удалить»." },
+      { "title": "Выполнить вход", "description": "login_page.login(TEST_USER_LOGIN, TEST_USER_PASSWORD) + page.wait_for_timeout(2000). Если остались на /user/login — fallback: login('admin', password)." },
+      { "title": "Открыть раздел Devices", "description": "devices_page.open() → goto /list/devices. assert_loaded(): кнопка New device / Создать / anticon-plus." },
+      { "title": "Создать устройство", "description": "open_create_form() → fill_device_form(unique_name, unique_uid, comment) → select_device_type_if_needed() → save_and_apply() (get_by_text Save/Сохранить + Apply/Применить)." },
+      { "title": "Проверить создание в списке", "description": "wait_until_device_in_list(unique_name): search_device_in_list (input в #scrollable-container + иконка лупы) → .ant-list-item с текстом unique_name." },
+      { "title": "Проверить создание в форме", "description": "open_device_edit_form_by_name(unique_name): в строке .ant-list-item клик button.action-menu-dropdown-btn (anticon-more) → пункт «Редактировать» → expect(#control-device_Name)=unique_name, #control-device_UniqueDeviceID=unique_uid." },
+      { "title": "Переименовать устройство", "description": "На открытой форме fill #control-device_Name = renamed_name → save_and_apply(refresh_list=True)." },
+      { "title": "Проверить новое имя в списке и форме", "description": "find_device_in_list(renamed_name) → open_device_edit_form_by_name(renamed_name, search=False) → expect(#control-device_Name).to_have_value(renamed_name)." },
+      { "title": "Удалить устройство", "description": "delete_device_and_confirm(renamed_name): search_device_in_list → button.action-menu-dropdown-btn (anticon-more) → «Удалить» → confirm_delete_in_visible_modal (1-е модальное окно) → confirm_delete_in_visible_modal (2-е подтверждение) → apply_changes_if_present." },
+      { "title": "Проверить удаление", "description": "open() → wait_until_has_rows(10000) → wait_until_device_not_in_list(renamed_name)." }
+    ],
+    "teardown": [
+      { "title": "Запись удалена на стенде", "description": "Деструктивный сценарий — тестовое устройство не остаётся после прогона." },
+      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
+    ]
+  },
 
   {
     "externalId": "ui.personnel.full_crud_destructive_flagged",
     "pytestId": "tests.test_personnel_crud_ui::test_personnel_full_crud_destructive_flagged",
     "classname": "Personnel",
     "displayName": "CRUD: создать тестового сотрудника и удалить его",
-    "description": "Двухветочный smoke сотрудника, проходит по умолчанию. Создаём запись с уникальной фамилией и табельным номером (suffix=str(int(time.time()))). Поведение далее зависит от RUN_DESTRUCTIVE_PERSONNEL_CRUD: при false (по умолчанию) — non-destructive soft smoke (best-effort открыть диалог удаления, Cancel, проверка что запись не пропала; всё через soft warnings), при true — destructive: удалить через чекбокс+Delete на тулбаре и проверить, что записи больше нет в списке. ВАЖНО про текущую сборку UI: на карточке /list/personnel/<id> нет видимых delete-кнопок, а строка таблицы не отдаёт inline checkbox — поэтому в non-destructive ветке используется soft-режим (любые шаги с делете могут быть пропущены без падения теста). Скип убран — тест всегда выполняется.",
+    "description": "Сценарий создания и удаления сотрудника в справочнике Personnel (Directories): авторизация → переход на /list/personnel?tab=Personnel → создать сотрудника с фамилией 'AUTOLAST-<unix-ts>' и табельным номером 'AUTOLAST-<ts>' (#PersonnelEditor_Number) → Save + Apply → найти запись в таблице MUI/AntD (фильтр All, поиск по номеру/фамилии) → при RUN_DESTRUCTIVE_PERSONNEL_CRUD=true: выделить строку (checkbox / Toggle select all) → Delete на тулбаре → подтвердить → проверить отсутствие; при false (по умолчанию): открыть диалог удаления → Cancel → запись остаётся. Маркер зачистки: префикс 'AUTOLAST-'.",
     "setup": [
-      { "title": "Авторизация Admin/123 успешна", "description": "PersonnelPage.open() логинится и переходит на /list/personnel?tab=Personnel." },
-      { "title": "Раздел Personnel доступен", "description": "URL: https://localhost:8001/list/personnel?tab=Personnel (или фолбэки: /list/personal, /list/staff, /list/employees, /directories/personnel)." },
-      { "title": "RUN_DESTRUCTIVE_PERSONNEL_CRUD прочитан как bool", "description": "Фикстура run_destructive_personnel_crud конвертит env (по умолчанию 'false') в bool. False ⇒ soft non-destructive smoke. True ⇒ реальное удаление с hard-ассертами. Скипа больше нет." }
+      { "title": "Стенд доступен", "description": "https://localhost:8001/user/login возвращает 200." },
+      { "title": "Существует пользователь Admin/123", "description": "Либо TEST_USER_LOGIN/TEST_USER_PASSWORD." },
+      { "title": "Раздел Personnel доступен", "description": "URL: https://localhost:8001/list/personnel?tab=Personnel (фолбэки: /list/personal, /list/staff, /list/employees, /directories/personnel)." }
     ],
     "steps": [
-      { "title": "Открыть раздел Personnel", "description": "personnel_page.open() + assert_loaded(). Зафиксировать URL в allure." },
-      { "title": "Сгенерировать suffix = str(int(time.time()))", "description": "Уникальность фамилии/табельного номера в рамках прогона." },
-      { "title": "Открыть форму создания сотрудника", "description": "personnel_page.open_create_form() — клик по 'Create'/'Создать'. Ожидание появления полей формы." },
-      { "title": "Заполнить обязательные поля", "description": "fill_required_fields(unique_suffix=suffix) — заполняет Last name = 'AUTOLAST-<suffix>', табельный номер = 'AUTOLAST-<suffix>' (если поле пустое, используется фамилия). Возвращает (person_name, personnel_number)." },
-      { "title": "Сохранить запись (Save + Apply)", "description": "save_form() → apply_changes_if_present() → ensure_person_saved() best-effort: в текущем UI URL не всегда меняется на /list/personnel/<id> после save, и это допустимо — фиксируется в allure." },
-      { "title": "Best-effort получение id сотрудника", "description": "current_person_id() из URL pattern /list/personnel/(\\d+). Фолбэк: recover_person_id_from_list — но MUI-строки не содержат <a href>, поэтому id может остаться None — это допустимо в текущем UI." },
-      { "title": "Вернуться в общий список Personnel и попытаться найти запись", "description": "go_back_to_personnel_list() (best-effort) + personnel_page.open() для гарантии. ensure_all_filter_selected() (фильтр 'All'). search_person_in_list(personnel_number/person_name). person_exists_in_table проходит по AntD и MUI table types с pagination." },
-      { "title": "Жёсткий assert только в destructive-режиме", "description": "В destructive — assert found_in_list. В non-destructive — soft warning в allure, тест продолжается (UI list/search/pagination бывает racey)." },
-      { "title": "Ветка Destructive: удалить через чекбокс + Delete на тулбаре", "description": "delete_person_from_list_via_toolbar(..., confirm=True): hover/click по строке (включает hidden checkboxes), check row checkbox или fallback на header 'Toggle select all', клик Delete на тулбаре, confirm в диалоге. Проверка через person_exists_in_table на повторном open(). Soft warning если запись ещё видна (UI cache)." },
-      { "title": "Ветка Non-destructive: best-effort open delete dialog (list → card)", "description": "delete_person_from_list_via_toolbar(..., confirm=False) — только открывает диалог, не подтверждает. Если не получилось — фолбэк trigger_delete_dialog_on_person_card(id). Если оба не сработали — soft warning, шаг считается завершённым." },
-      { "title": "Ветка Non-destructive: Cancel + soft проверка наличия записи", "description": "cancel_delete_dialog_if_visible() (Cancel/Отмена/крестик), затем повторный open() + search + person_exists_in_table. Если запись не нашлась — soft warning (UI race), assert не fail-ит." }
+      { "title": "Сгенерировать suffix = str(int(time.time()))", "description": "person_name = 'AUTOLAST-<suffix>', personnel_number = 'AUTOLAST-<suffix>'. allure.dynamic.parameter сохраняет значения в отчёт." },
+      { "title": "Открыть раздел Personnel", "description": "personnel_page.open() — логин Admin/123 → goto /list/personnel?tab=Personnel. assert_loaded() проверяет URL раздела." },
+      { "title": "Открыть форму создания сотрудника", "description": "personnel_page.open_create_form() — клик по button:has-text('Создать') / 'Create' / button.index_button с иконкой '+'. Ожидание editable-полей или URL /list/personnel/<id>." },
+      { "title": "Заполнить обязательные поля", "description": "fill_required_fields(unique_suffix=suffix): Last name = 'AUTOLAST-<suffix>', доп. поля AUTONAME-/AUTOMID-/AUTOTEST-<suffix>, табельный номер в #PersonnelEditor_Number = 'AUTOLAST-<suffix>'. Возвращает (person_name, personnel_number)." },
+      { "title": "Сохранить запись (Save + Apply)", "description": "save_form() кликает Save/Сохранить → apply_changes_if_present() кликает Apply/Применить. ensure_person_saved() best-effort — URL может не смениться на /list/personnel/<id>." },
+      { "title": "Получить id сотрудника (best-effort)", "description": "current_person_id() из URL /list/personnel/(\\d+). Фолбэк recover_person_id_from_list(person_name, personnel_number). id может остаться None — валидация по имени/номеру." },
+      { "title": "Вернуться в список и найти созданную запись", "description": "go_back_to_personnel_list() (best-effort) → personnel_page.open() → ensure_all_filter_selected() → search_person_in_list(personnel_number или person_name) → person_exists_in_table в .ant-table-tbody / .MuiTableBody-root." },
+      { "title": "Проверить наличие в списке", "description": "При RUN_DESTRUCTIVE_PERSONNEL_CRUD=true → assert found_in_list. При false — soft warning в allure при race UI, тест продолжается." },
+      { "title": "Удалить через чекбокс + Delete на тулбаре (destructive)", "description": "Только при RUN_DESTRUCTIVE_PERSONNEL_CRUD=true. delete_person_from_list_via_toolbar(..., confirm=True): hover/click строки → check row checkbox или header input[aria-label='Toggle select all'] → Delete на тулбаре → confirm в .ant-modal → assert NOT person_exists_in_table." },
+      { "title": "Открыть диалог удаления и нажать Cancel (non-destructive)", "description": "Только при RUN_DESTRUCTIVE_PERSONNEL_CRUD=false. delete_person_from_list_via_toolbar(..., confirm=False) или trigger_delete_dialog_on_person_card(id) → cancel_delete_dialog_if_visible() → запись остаётся в системе." }
     ],
     "teardown": [
-      { "title": "Маркер 'AUTOLAST-' для последующей зачистки", "description": "Даже в non-destructive ветке созданная запись остаётся на стенде; легко чистится фильтром по префиксу 'AUTOLAST-' в UI." },
+      { "title": "При non-destructive запись остаётся на стенде", "description": "Префикс 'AUTOLAST-' — маркер для ручной зачистки в UI." },
       { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
     ]
   },
 
+  {
+    "externalId": "ui.production_units_crud.full_crud",
+    "pytestId": "tests.test_production_units_crud::test_production_units_crud",
+    "classname": "ProductionUnitsCRUD",
+    "displayName": "Создать подразделение, переименовать и удалить production unit",
+    "description": "Полный CRUD подразделения (ProductionUnitsCRUD): логин → переключение языка на RU → /list/production-structure?tab=productionUnits → создать с Code = 'APU-<unix-ts>' (макс 18), Name = 'auto-pu-<ts>', Type ≠ Enterprise, Parent (TreeSelect) → Save + Apply → проверить на карточке и в иерархическом MUI-списке (кнопка «Раскрыть» + поиск) → переименовать Name на 'redact-auto-pu-<ts>' → открыть карточку по id → Delete (ant-btn-dangerous icon-only с корзиной) → подтвердить «Удалить» → Apply → проверить отсутствие в списке и недоступность карточки.",
+    "setup": [
+      { "title": "Стенд доступен", "description": "https://localhost:8001/user/login возвращает 200." },
+      { "title": "Существует пользователь Admin/123", "description": "Либо TEST_USER_LOGIN/TEST_USER_PASSWORD." },
+      { "title": "Раздел Production units доступен", "description": "URL: https://localhost:8001/list/production-structure?tab=productionUnits. Список — иерархическая MUI-таблица (tree) с кнопкой «Раскрыть» и поиском в тулбаре." }
+    ],
+    "steps": [
+      { "title": "Сгенерировать тестовые данные", "description": "suffix = str(int(time.time())); unique_code = f'APU-{suffix}'[:18]; unique_name = f'auto-pu-{suffix}'; renamed_name = f'redact-auto-pu-{suffix}'. allure.dynamic.parameter сохраняет значения в отчёт." },
+      { "title": "Открыть страницу логина", "description": "login_page.open() → goto https://localhost:8001/user/login." },
+      { "title": "Переключить язык интерфейса на RU", "description": "login_page.switch_language_to_russian() — нужен для кнопок «Создать»/«Раскрыть»/«Удалить»." },
+      { "title": "Выполнить вход", "description": "login_page.login(TEST_USER_LOGIN, TEST_USER_PASSWORD) + page.wait_for_timeout(2000). Если остались на /user/login — fallback: login('admin', password)." },
+      { "title": "Открыть раздел Production units", "description": "production_units_page.open() → goto /list/production-structure?tab=productionUnits. assert_loaded(): table.MuiTable-root и первая видимая кнопка Create/Создать (index_button__EOmvq)." },
+      { "title": "Создать подразделение", "description": "open_create_form() → fill_code_and_name(unique_code, unique_name) → fill_mandatory_selects_for_new_unit() (Type ≠ Enterprise, Parent TreeSelect, Status) → save_until_persisted() с ретраями Save/Apply до /production-unit/<id>." },
+      { "title": "Получить unit_id", "description": "current_unit_id() из URL /production-structure/production-unit/(\\d+). Фолбэк recover_unit_id_from_list(unique_code, unique_name). assert unit_id != '0'." },
+      { "title": "Проверить создание на карточке", "description": "open_unit_by_id(unit_id) → expect(#ProductionUnit_Code).to_have_value(unique_code) и #ProductionUnit_Name = unique_name." },
+      { "title": "Проверить создание в списке", "description": "wait_until_unit_in_table(unit_id, unique_code, unique_name): go_to_list() → expand_all_tree_rows_if_present() (кнопка «Раскрыть» / Expand all) → search_unit_in_list(unique_code) → строка по a[href*='/production-unit/{unit_id}'] или по тексту Code/Name." },
+      { "title": "Переименовать подразделение", "description": "open_unit_by_id(unit_id) → fill #ProductionUnit_Name = renamed_name → save_form() → apply_changes_if_present()." },
+      { "title": "Проверить новое имя на карточке и в списке", "description": "open_unit_by_id(unit_id) → expect(#ProductionUnit_Name).to_have_value(renamed_name); wait_until_unit_in_table(unit_id, unique_code, renamed_name)." },
+      { "title": "Удалить подразделение с карточки", "description": "delete_unit_from_card_and_confirm(unit_id): open_unit_by_id(unit_id) → trigger_delete_on_card() (button.ant-btn-dangerous.ant-btn-icon-only с иконкой корзины, не Save) → wait_for_delete_dialog() → confirm_delete_dialog() (кнопка «Удалить») → apply_changes_if_present()." },
+      { "title": "Проверить удаление", "description": "wait_until_unit_not_in_table(unit_id, unique_code, renamed_name); open_unit_by_id(unit_id) — карточка с Code != unique_code или id недоступен." }
+    ],
+    "teardown": [
+      { "title": "Запись удалена на стенде", "description": "Деструктивный сценарий — тестовое подразделение не остаётся после прогона." },
+      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
+    ]
+  },
   {
     "externalId": "ui.production_units.page_opened",
     "pytestId": "tests.test_production_units_crud_ui::test_production_units_page_opened",
