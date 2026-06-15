@@ -8,7 +8,9 @@ import re
 import pytest
 from playwright.sync_api import sync_playwright
 
+from tests.api.ipm_setup_client import IpmBackendSetup, prepare_ipm_backend
 from tests.pages.devices_page import DevicesPage
+from tests.pages.ipm_login_page import IpmLoginPage
 from tests.pages.login_page import LoginPage
 from tests.pages.machine_params_page import MachineParamsPage
 from tests.pages.page_factory import PageFactory
@@ -74,6 +76,31 @@ def roles_url() -> str:
 
 
 @pytest.fixture(scope="session")
+def web_client_api_url() -> str:
+    return _env("WEB_CLIENT_API_URL", "http://127.0.0.1:8089")  # type: ignore[return-value]
+
+
+@pytest.fixture(scope="session")
+def web_api_user_id() -> str:
+    return _env("WEB_API_USER_ID", "1")  # type: ignore[return-value]
+
+
+@pytest.fixture(scope="session")
+def ipm_url() -> str:
+    return _env("IPM_URL", "http://localhost:8002")  # type: ignore[return-value]
+
+
+@pytest.fixture(scope="session")
+def ipm_dept_id() -> int:
+    return int(_env("IPM_MACHINE_DEPT_ID", "2") or "2")
+
+
+@pytest.fixture(scope="session")
+def ipm_worker_role_id() -> int:
+    return int(_env("IPM_WORKER_ROLE_ID", "1") or "1")
+
+
+@pytest.fixture(scope="session")
 def credentials() -> tuple[str, str]:
     username = _env("TEST_USER_LOGIN", "Admin")
     password = _env("TEST_USER_PASSWORD", "123")
@@ -127,6 +154,27 @@ def personnel_page(page, login_url: str, credentials: tuple[str, str]) -> Person
 def production_units_page(page, login_url: str, credentials: tuple[str, str]) -> ProductionUnitsPage:
     username, password = credentials
     return ProductionUnitsPage(page=page, login_url=login_url, username=username, password=password)
+
+
+@pytest.fixture()
+def ipm_login_page(page, ipm_url: str) -> IpmLoginPage:
+    return IpmLoginPage(page=page, ipm_url=ipm_url)
+
+
+@pytest.fixture()
+def ipm_backend_setup(
+    web_client_api_url: str,
+    web_api_user_id: str,
+    ipm_dept_id: int,
+    ipm_worker_role_id: int,
+) -> IpmBackendSetup:
+    """API-подготовка персонала/станка/протокола/роли для сценариев ИПМ."""
+    return prepare_ipm_backend(
+        base_url=web_client_api_url,
+        user_id=web_api_user_id,
+        dept_id=ipm_dept_id,
+        worker_role_id=ipm_worker_role_id,
+    )
 
 
 @pytest.fixture(scope="session")

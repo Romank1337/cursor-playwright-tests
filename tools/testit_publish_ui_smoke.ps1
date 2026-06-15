@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Publishes 22 UI/Smoke autotests into Test IT MDC project via REST API v2.
+  Publishes UI/Smoke autotests into Test IT MDC project via REST API v2.
   Idempotent: existing autotests are updated by externalId; new ones are created.
 
 .DESCRIPTION

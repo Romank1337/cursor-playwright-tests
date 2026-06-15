@@ -6,16 +6,34 @@
     "displayName": "Страница авторизации открывается и показывает основные элементы",
     "description": "Smoke-проверка страницы авторизации. Тест убеждается, что фронт жив после деплоя: страница /user/login открывается без ошибок и отображает поле логина, поле пароля и кнопку отправки формы. Если этот тест падает — все остальные UI-тесты тоже упадут.",
     "setup": [
-      { "title": "Стенд доступен", "description": "URL: https://localhost:8001/user/login (переопределяется env LOGIN_URL). Сертификат самоподписанный — браузер запускается с ignore_https_errors=True." }
+      {
+        "title": "Стенд доступен",
+        "description": "URL: https://localhost:8001/user/login (переопределяется env LOGIN_URL). Сертификат самоподписанный — браузер запускается с ignore_https_errors=True."
+      }
     ],
     "steps": [
-      { "title": "Открыть страницу /user/login", "description": "page.goto('https://localhost:8001/user/login', wait_until='domcontentloaded'). Ждём полной загрузки DOM." },
-      { "title": "Проверить, что виден инпут логина", "description": "expect(page.locator('#login')).to_be_visible() с auto-wait Playwright (5с по умолчанию)." },
-      { "title": "Проверить, что виден инпут пароля", "description": "expect(page.locator('#password')).to_be_visible()." },
-      { "title": "Проверить, что видна кнопка submit", "description": "expect(page.locator(\"button[type='submit']\")).to_be_visible()." }
+      {
+        "title": "Открыть страницу /user/login",
+        "description": "page.goto('https://localhost:8001/user/login', wait_until='domcontentloaded'). Ждём полной загрузки DOM."
+      },
+      {
+        "title": "Проверить, что виден инпут логина",
+        "description": "expect(page.locator('#login')).to_be_visible() с auto-wait Playwright (5с по умолчанию)."
+      },
+      {
+        "title": "Проверить, что виден инпут пароля",
+        "description": "expect(page.locator('#password')).to_be_visible()."
+      },
+      {
+        "title": "Проверить, что видна кнопка submit",
+        "description": "expect(page.locator(\"button[type='submit']\")).to_be_visible()."
+      }
     ],
     "teardown": [
-      { "title": "Закрыть browser context", "description": "Делает pytest-playwright фикстура `page` после теста." }
+      {
+        "title": "Закрыть browser context",
+        "description": "Делает pytest-playwright фикстура `page` после теста."
+      }
     ]
   },
   {
@@ -25,15 +43,30 @@
     "displayName": "Поле пароля имеет тип password",
     "description": "Базовая security/UX-проверка: поле пароля маскирует ввод. Защита от регресса, когда поле случайно становится type='text' (пароль виден в DOM и на экране).",
     "setup": [
-      { "title": "Открыта /user/login", "description": "Перед тестом login_page.open() выполняет goto на https://localhost:8001/user/login." }
+      {
+        "title": "Открыта /user/login",
+        "description": "Перед тестом login_page.open() выполняет goto на https://localhost:8001/user/login."
+      }
     ],
     "steps": [
-      { "title": "Открыть страницу логина", "description": "login_page.open() → goto + wait_until='domcontentloaded'." },
-      { "title": "Найти поле #password", "description": "page.locator('#password')." },
-      { "title": "Проверить атрибут type='password'", "description": "expect(...).to_have_attribute('type', 'password')." }
+      {
+        "title": "Открыть страницу логина",
+        "description": "login_page.open() → goto + wait_until='domcontentloaded'."
+      },
+      {
+        "title": "Найти поле #password",
+        "description": "page.locator('#password')."
+      },
+      {
+        "title": "Проверить атрибут type='password'",
+        "description": "expect(...).to_have_attribute('type', 'password')."
+      }
     ],
     "teardown": [
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
+      {
+        "title": "Закрыть browser context",
+        "description": "pytest-playwright fixture `page` teardown."
+      }
     ]
   },
   {
@@ -43,19 +76,46 @@
     "displayName": "После успешного логина происходит редирект на рабочую страницу",
     "description": "Happy path: вводим валидные креды (Admin / 123 по умолчанию, переопределяется env TEST_USER_LOGIN/TEST_USER_PASSWORD) и проверяем редирект на /monitoring/realtime?deptId=...&presetId=... (паттерн SUCCESS_URL_REGEX).",
     "setup": [
-      { "title": "Стенд доступен", "description": "https://localhost:8001/user/login возвращает 200." },
-      { "title": "Существует пользователь Admin/123", "description": "Либо переопределение через env TEST_USER_LOGIN='Admin', TEST_USER_PASSWORD='123'." }
+      {
+        "title": "Стенд доступен",
+        "description": "https://localhost:8001/user/login возвращает 200."
+      },
+      {
+        "title": "Существует пользователь Admin/123",
+        "description": "Либо переопределение через env TEST_USER_LOGIN='Admin', TEST_USER_PASSWORD='123'."
+      }
     ],
     "steps": [
-      { "title": "Открыть страницу логина", "description": "page.goto('https://localhost:8001/user/login')." },
-      { "title": "Ввести логин = 'Admin'", "description": "page.locator('#login').fill('Admin') (или значение из TEST_USER_LOGIN)." },
-      { "title": "Ввести пароль = '123'", "description": "page.locator('#password').fill('123') (или значение из TEST_USER_PASSWORD)." },
-      { "title": "Нажать кнопку submit", "description": "page.locator(\"button[type='submit']\").click()." },
-      { "title": "Дождаться смены URL", "description": "expect(page).to_have_url(re.compile(r'.*monitoring/realtime\\?deptId=\\d+&presetId=\\d+.*'), timeout=20_000)." },
-      { "title": "Зафиксировать username в Allure", "description": "allure.dynamic.parameter('username', 'Admin') — пригодится в отчётах при разных учётках." }
+      {
+        "title": "Открыть страницу логина",
+        "description": "page.goto('https://localhost:8001/user/login')."
+      },
+      {
+        "title": "Ввести логин = 'Admin'",
+        "description": "page.locator('#login').fill('Admin') (или значение из TEST_USER_LOGIN)."
+      },
+      {
+        "title": "Ввести пароль = '123'",
+        "description": "page.locator('#password').fill('123') (или значение из TEST_USER_PASSWORD)."
+      },
+      {
+        "title": "Нажать кнопку submit",
+        "description": "page.locator(\"button[type='submit']\").click()."
+      },
+      {
+        "title": "Дождаться смены URL",
+        "description": "expect(page).to_have_url(re.compile(r'.*monitoring/realtime\\?deptId=\\d+&presetId=\\d+.*'), timeout=20_000)."
+      },
+      {
+        "title": "Зафиксировать username в Allure",
+        "description": "allure.dynamic.parameter('username', 'Admin') — пригодится в отчётах при разных учётках."
+      }
     ],
     "teardown": [
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
+      {
+        "title": "Закрыть browser context",
+        "description": "pytest-playwright fixture `page` teardown."
+      }
     ]
   },
   {
@@ -65,20 +125,50 @@
     "displayName": "Логин с неверными данными не должен авторизовывать пользователя",
     "description": "Негативная проверка: с неверными кредами (по умолчанию wrong_user / wrong_pass из env TEST_INVALID_LOGIN/TEST_INVALID_PASSWORD) авторизация не выполняется, URL остаётся /user/login, видно сообщение об ошибке (toast / alert / inline).",
     "setup": [
-      { "title": "Стенд доступен", "description": "https://localhost:8001/user/login." },
-      { "title": "В системе нет пользователя 'wrong_user'", "description": "Дефолтные неверные креды: login='wrong_user', password='wrong_pass' (TEST_INVALID_LOGIN/TEST_INVALID_PASSWORD)." }
+      {
+        "title": "Стенд доступен",
+        "description": "https://localhost:8001/user/login."
+      },
+      {
+        "title": "В системе нет пользователя 'wrong_user'",
+        "description": "Дефолтные неверные креды: login='wrong_user', password='wrong_pass' (TEST_INVALID_LOGIN/TEST_INVALID_PASSWORD)."
+      }
     ],
     "steps": [
-      { "title": "Открыть страницу логина", "description": "page.goto('https://localhost:8001/user/login')." },
-      { "title": "Ввести #login = 'wrong_user'", "description": "Значение из фикстуры invalid_credentials (env TEST_INVALID_LOGIN)." },
-      { "title": "Ввести #password = 'wrong_pass'", "description": "Значение из фикстуры invalid_credentials (env TEST_INVALID_PASSWORD)." },
-      { "title": "Нажать button[type='submit']", "description": "Триггер сабмита формы." },
-      { "title": "Подождать ~700ms", "description": "Даём UI время отрисовать ошибку (toast/alert)." },
-      { "title": "Проверить, что URL остался /user/login", "description": "login_page.assert_still_on_login_page() — проверяет, что в page.url есть 'login' и нет редиректа на /monitoring/realtime." },
-      { "title": "Проверить отображение ошибки авторизации", "description": "login_page.has_auth_error_message() — учитывает разные UI-варианты: toast, alert, inline-текст под полем (EN/RU)." }
+      {
+        "title": "Открыть страницу логина",
+        "description": "page.goto('https://localhost:8001/user/login')."
+      },
+      {
+        "title": "Ввести #login = 'wrong_user'",
+        "description": "Значение из фикстуры invalid_credentials (env TEST_INVALID_LOGIN)."
+      },
+      {
+        "title": "Ввести #password = 'wrong_pass'",
+        "description": "Значение из фикстуры invalid_credentials (env TEST_INVALID_PASSWORD)."
+      },
+      {
+        "title": "Нажать button[type='submit']",
+        "description": "Триггер сабмита формы."
+      },
+      {
+        "title": "Подождать ~700ms",
+        "description": "Даём UI время отрисовать ошибку (toast/alert)."
+      },
+      {
+        "title": "Проверить, что URL остался /user/login",
+        "description": "login_page.assert_still_on_login_page() — проверяет, что в page.url есть 'login' и нет редиректа на /monitoring/realtime."
+      },
+      {
+        "title": "Проверить отображение ошибки авторизации",
+        "description": "login_page.has_auth_error_message() — учитывает разные UI-варианты: toast, alert, inline-текст под полем (EN/RU)."
+      }
     ],
     "teardown": [
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
+      {
+        "title": "Закрыть browser context",
+        "description": "pytest-playwright fixture `page` teardown."
+      }
     ]
   },
   {
@@ -88,17 +178,38 @@
     "displayName": "Пустая форма не должна приводить к успешному входу",
     "description": "Отправка пустой формы (#login и #password не заполнены) не должна авторизовывать. Проверяем, что после сабмита URL остался /user/login и базовые элементы формы по-прежнему видимы.",
     "setup": [
-      { "title": "Стенд доступен", "description": "https://localhost:8001/user/login." }
+      {
+        "title": "Стенд доступен",
+        "description": "https://localhost:8001/user/login."
+      }
     ],
     "steps": [
-      { "title": "Открыть страницу логина", "description": "page.goto('https://localhost:8001/user/login')." },
-      { "title": "Не заполняя поля, нажать submit", "description": "login_page.submit_empty() — кликает по button[type='submit'] без предварительного fill полей." },
-      { "title": "Подождать ~500ms", "description": "Даём UI время отреагировать (валидация формы / отказ сервера)." },
-      { "title": "Проверить, что URL всё ещё /user/login", "description": "login_page.assert_still_on_login_page()." },
-      { "title": "Проверить, что форма по-прежнему видима", "description": "login_page.assert_loaded() — видны #login, #password, button[type='submit']." }
+      {
+        "title": "Открыть страницу логина",
+        "description": "page.goto('https://localhost:8001/user/login')."
+      },
+      {
+        "title": "Не заполняя поля, нажать submit",
+        "description": "login_page.submit_empty() — кликает по button[type='submit'] без предварительного fill полей."
+      },
+      {
+        "title": "Подождать ~500ms",
+        "description": "Даём UI время отреагировать (валидация формы / отказ сервера)."
+      },
+      {
+        "title": "Проверить, что URL всё ещё /user/login",
+        "description": "login_page.assert_still_on_login_page()."
+      },
+      {
+        "title": "Проверить, что форма по-прежнему видима",
+        "description": "login_page.assert_loaded() — видны #login, #password, button[type='submit']."
+      }
     ],
     "teardown": [
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
+      {
+        "title": "Закрыть browser context",
+        "description": "pytest-playwright fixture `page` teardown."
+      }
     ]
   },
   {
@@ -108,16 +219,34 @@
     "displayName": "На странице логина доступен элемент выбора языка",
     "description": "Проверяем наличие переключателя языка. Если на стенде он отключён конфигом — тест корректно скипается, а не падает.",
     "setup": [
-      { "title": "Стенд доступен", "description": "https://localhost:8001/user/login." }
+      {
+        "title": "Стенд доступен",
+        "description": "https://localhost:8001/user/login."
+      }
     ],
     "steps": [
-      { "title": "Открыть страницу логина", "description": "page.goto('https://localhost:8001/user/login')." },
-      { "title": "Найти контрол смены языка", "description": "login_page.get_language_locator() — пробует несколько селекторов (button с aria-label, AntD select, иконка глобуса и т.п.)." },
-      { "title": "Если контрол не найден — pytest.skip", "description": "Сообщение: 'Переключатель языка не найден в текущей конфигурации стенда'." },
-      { "title": "Если найден — assert is_visible()", "description": "Тест проходит, факт наличия зафиксирован." }
+      {
+        "title": "Открыть страницу логина",
+        "description": "page.goto('https://localhost:8001/user/login')."
+      },
+      {
+        "title": "Найти контрол смены языка",
+        "description": "login_page.get_language_locator() — пробует несколько селекторов (button с aria-label, AntD select, иконка глобуса и т.п.)."
+      },
+      {
+        "title": "Если контрол не найден — pytest.skip",
+        "description": "Сообщение: 'Переключатель языка не найден в текущей конфигурации стенда'."
+      },
+      {
+        "title": "Если найден — assert is_visible()",
+        "description": "Тест проходит, факт наличия зафиксирован."
+      }
     ],
     "teardown": [
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
+      {
+        "title": "Закрыть browser context",
+        "description": "pytest-playwright fixture `page` teardown."
+      }
     ]
   },
   {
@@ -127,18 +256,42 @@
     "displayName": "Переключение языка на странице логина (если опция доступна)",
     "description": "Переключаем язык на EN и проверяем, что placeholder поля логина становится англоязычным. Паттерн ожидания: .*(login|username|user name|email).* (case-insensitive), переопределяется env LANG_LOGIN_PLACEHOLDER_EN_REGEX.",
     "setup": [
-      { "title": "Стенд доступен", "description": "https://localhost:8001/user/login." },
-      { "title": "Контрол смены языка доступен", "description": "Иначе тест скипается." }
+      {
+        "title": "Стенд доступен",
+        "description": "https://localhost:8001/user/login."
+      },
+      {
+        "title": "Контрол смены языка доступен",
+        "description": "Иначе тест скипается."
+      }
     ],
     "steps": [
-      { "title": "Открыть страницу логина", "description": "page.goto('https://localhost:8001/user/login')." },
-      { "title": "Если контрол языка недоступен — pytest.skip", "description": "login_page.has_language_control() == False." },
-      { "title": "Переключить язык на EN", "description": "login_page.switch_language('EN'). Если опция EN не найдена в выпадайке — skip." },
-      { "title": "Прочитать атрибут placeholder поля #login", "description": "page.locator('#login').get_attribute('placeholder') и сохранить в allure-attachment 'EN placeholder'." },
-      { "title": "Проверить соответствие EN-паттерну", "description": "re.match(LANG_LOGIN_PLACEHOLDER_EN_REGEX, placeholder) → должно сматчить (login|username|user name|email)." }
+      {
+        "title": "Открыть страницу логина",
+        "description": "page.goto('https://localhost:8001/user/login')."
+      },
+      {
+        "title": "Если контрол языка недоступен — pytest.skip",
+        "description": "login_page.has_language_control() == False."
+      },
+      {
+        "title": "Переключить язык на EN",
+        "description": "login_page.switch_language('EN'). Если опция EN не найдена в выпадайке — skip."
+      },
+      {
+        "title": "Прочитать атрибут placeholder поля #login",
+        "description": "page.locator('#login').get_attribute('placeholder') и сохранить в allure-attachment 'EN placeholder'."
+      },
+      {
+        "title": "Проверить соответствие EN-паттерну",
+        "description": "re.match(LANG_LOGIN_PLACEHOLDER_EN_REGEX, placeholder) → должно сматчить (login|username|user name|email)."
+      }
     ],
     "teardown": [
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
+      {
+        "title": "Закрыть browser context",
+        "description": "pytest-playwright fixture `page` teardown."
+      }
     ]
   },
   {
@@ -148,18 +301,42 @@
     "displayName": "Переключение EN -> RU меняет placeholder обратно",
     "description": "Двойное переключение EN → RU должно вернуть русскоязычный placeholder. Паттерн RU: .*(логин|пользоват|введите).* (case-insensitive), переопределяется env LANG_LOGIN_PLACEHOLDER_RU_REGEX.",
     "setup": [
-      { "title": "Стенд доступен", "description": "https://localhost:8001/user/login." },
-      { "title": "Контрол смены языка доступен", "description": "Иначе тест скипается." }
+      {
+        "title": "Стенд доступен",
+        "description": "https://localhost:8001/user/login."
+      },
+      {
+        "title": "Контрол смены языка доступен",
+        "description": "Иначе тест скипается."
+      }
     ],
     "steps": [
-      { "title": "Открыть страницу логина", "description": "page.goto('https://localhost:8001/user/login')." },
-      { "title": "Если контрола нет — pytest.skip", "description": "login_page.has_language_control()." },
-      { "title": "Переключить язык на EN", "description": "login_page.switch_language('EN'). Если опция EN не найдена — skip." },
-      { "title": "Переключить язык обратно на RU", "description": "login_page.switch_language('RU'). Если опция RU не найдена — skip." },
-      { "title": "Прочитать и проверить placeholder", "description": "page.locator('#login').get_attribute('placeholder') должен сматчить (логин|пользоват|введите)." }
+      {
+        "title": "Открыть страницу логина",
+        "description": "page.goto('https://localhost:8001/user/login')."
+      },
+      {
+        "title": "Если контрола нет — pytest.skip",
+        "description": "login_page.has_language_control()."
+      },
+      {
+        "title": "Переключить язык на EN",
+        "description": "login_page.switch_language('EN'). Если опция EN не найдена — skip."
+      },
+      {
+        "title": "Переключить язык обратно на RU",
+        "description": "login_page.switch_language('RU'). Если опция RU не найдена — skip."
+      },
+      {
+        "title": "Прочитать и проверить placeholder",
+        "description": "page.locator('#login').get_attribute('placeholder') должен сматчить (логин|пользоват|введите)."
+      }
     ],
     "teardown": [
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
+      {
+        "title": "Закрыть browser context",
+        "description": "pytest-playwright fixture `page` teardown."
+      }
     ]
   },
   {
@@ -169,157 +346,46 @@
     "displayName": "Выбранный язык сохраняется после обновления страницы",
     "description": "Выбираем EN, делаем page.reload() и проверяем, что язык остался EN. Покрывает, что предпочтение языка хранится в cookie/localStorage и не сбрасывается на дефолт.",
     "setup": [
-      { "title": "Стенд доступен", "description": "https://localhost:8001/user/login." },
-      { "title": "Контрол смены языка доступен", "description": "Иначе тест скипается." }
+      {
+        "title": "Стенд доступен",
+        "description": "https://localhost:8001/user/login."
+      },
+      {
+        "title": "Контрол смены языка доступен",
+        "description": "Иначе тест скипается."
+      }
     ],
     "steps": [
-      { "title": "Открыть страницу логина", "description": "page.goto('https://localhost:8001/user/login')." },
-      { "title": "Если контрола нет — pytest.skip", "description": "login_page.has_language_control()." },
-      { "title": "Переключить язык на EN", "description": "login_page.switch_language('EN'). Если опция не найдена — skip." },
-      { "title": "Прочитать текущий язык до перезагрузки", "description": "before_reload = login_page.current_language()." },
-      { "title": "Сделать page.reload()", "description": "page.reload(wait_until='domcontentloaded')." },
-      { "title": "Прочитать язык после перезагрузки", "description": "after_reload = login_page.current_language(). Если оба значения определены — assert before_reload == after_reload == 'EN'." }
+      {
+        "title": "Открыть страницу логина",
+        "description": "page.goto('https://localhost:8001/user/login')."
+      },
+      {
+        "title": "Если контрола нет — pytest.skip",
+        "description": "login_page.has_language_control()."
+      },
+      {
+        "title": "Переключить язык на EN",
+        "description": "login_page.switch_language('EN'). Если опция не найдена — skip."
+      },
+      {
+        "title": "Прочитать текущий язык до перезагрузки",
+        "description": "before_reload = login_page.current_language()."
+      },
+      {
+        "title": "Сделать page.reload()",
+        "description": "page.reload(wait_until='domcontentloaded')."
+      },
+      {
+        "title": "Прочитать язык после перезагрузки",
+        "description": "after_reload = login_page.current_language(). Если оба значения определены — assert before_reload == after_reload == 'EN'."
+      }
     ],
     "teardown": [
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
-    ]
-  },
-
-  {
-    "externalId": "ui.devices.page_opened",
-    "pytestId": "tests.test_devices_crud_ui::test_devices_page_opened",
-    "classname": "Devices",
-    "displayName": "Раздел Devices открывается и показывает базовые контролы",
-    "description": "Smoke-проверка раздела Directories → Devices: страница /list/devices открывается и показывает кнопку создания. Запускается перед основными CRUD-сценариями. Шапка иногда подгружается с задержкой, поэтому assert_loaded имеет таймаут 20с и 1 retry с reload.",
-    "setup": [
-      { "title": "Авторизация Admin/123 успешна", "description": "DevicesPage.open() сам логинится: goto /user/login → fill #login='Admin' / #password='123' → click submit." },
-      { "title": "Раздел Devices доступен пользователю", "description": "URL: https://localhost:8001/list/devices." }
-    ],
-    "steps": [
-      { "title": "Логин и переход в /list/devices", "description": "DevicesPage.open() — фолбэк-логика на случай редиректа обратно на /user/login (логинится повторно)." },
-      { "title": "Дождаться появления кнопки создания", "description": "assert_loaded(timeout=20000) ищет первую из: button:has-text('New device'), 'Create', 'Создать', button:has(.anticon-plus)." },
-      { "title": "Если за 20с не найдена — reload + повтор", "description": "Один retry: DevicesPage.open() → expect(..., timeout=20000). Защита от прогрева фронта." }
-    ],
-    "teardown": [
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
-    ]
-  },
-  {
-    "externalId": "ui.devices.create_form_has_required_fields",
-    "pytestId": "tests.test_devices_crud_ui::test_devices_create_form_has_required_fields",
-    "classname": "Devices",
-    "displayName": "Форма создания устройства открывается и содержит обязательные поля",
-    "description": "Открываем форму New device и проверяем структуру: Name, UID, Comment, Type (AntD/native Select), IP (readonly). Запись НЕ сохраняется — это негрязный read-тест.",
-    "setup": [
-      { "title": "Раздел Devices открыт", "description": "После DevicesPage.open() — URL /list/devices, шапка с кнопкой New device загружена." }
-    ],
-    "steps": [
-      { "title": "Открыть форму создания", "description": "devices_page.open_create_form() — пробует кликнуть по 'New device', 'Create', 'Создать' или кнопке с иконкой '+'. Фолбэк: прямой переход /list/devices/0." },
-      { "title": "Проверить наличие поля Name", "description": "page.locator('#control-device_Name').count() > 0." },
-      { "title": "Проверить наличие поля Type", "description": "page.locator('#control-device_DeviceTypeId').count() > 0 (нативный select или AntD Select)." },
-      { "title": "Проверить наличие поля IP", "description": "page.locator('#control-device_IPAddress').count() > 0 (поле readonly — заполняется сервером)." },
-      { "title": "Проверить наличие поля UID", "description": "page.locator('#control-device_UniqueDeviceID').count() > 0." },
-      { "title": "Проверить наличие поля Comment", "description": "page.locator('#control-device_Comment').count() > 0." },
-      { "title": "Все 4 обязательных поля есть → assert", "description": "devices_page.has_required_form_controls() возвращает True." }
-    ],
-    "teardown": [
-      { "title": "Не сохранять форму", "description": "Тест проверочный, запись не создаётся." },
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
-    ]
-  },
-  {
-    "externalId": "ui.devices.update_form_fields_editable",
-    "pytestId": "tests.test_devices_crud_ui::test_devices_update_form_fields_editable",
-    "classname": "Devices",
-    "displayName": "В форме устройства можно изменять редактируемые поля",
-    "description": "Открываем форму, заполняем Name / UID / Comment уникальными значениями вида AUTOTEST-DEVICE-<unix-ts>, AUTOTEST-UID-<unix-ts>, AUTOTEST-COMMENT-<unix-ts>. Проверяем, что инпуты приняли ввод. IP остаётся readonly — это контролируется сервером.",
-    "setup": [
-      { "title": "Открыта форма создания устройства", "description": "После devices_page.open_create_form() — на странице видны #control-device_Name, _UID, _Comment, _DeviceTypeId, _IPAddress." }
-    ],
-    "steps": [
-      { "title": "Сгенерировать suffix = str(int(time.time()))", "description": "Например, suffix='1748257215' (unix timestamp в секундах)." },
-      { "title": "Заполнить Name = 'AUTOTEST-DEVICE-<suffix>'", "description": "page.locator('#control-device_Name').fill('AUTOTEST-DEVICE-1748257215')." },
-      { "title": "Заполнить UID = 'AUTOTEST-UID-<suffix>'", "description": "page.locator('#control-device_UniqueDeviceID').fill('AUTOTEST-UID-1748257215')." },
-      { "title": "Заполнить Comment = 'AUTOTEST-COMMENT-<suffix>'", "description": "page.locator('#control-device_Comment').fill('AUTOTEST-COMMENT-1748257215')." },
-      { "title": "Проверить, что Name содержит введённое", "description": "expect(name_input).to_have_value('AUTOTEST-DEVICE-1748257215')." },
-      { "title": "Проверить, что UID содержит введённое", "description": "expect(uid_input).to_have_value('AUTOTEST-UID-1748257215')." },
-      { "title": "Проверить, что IP остался readonly/disabled", "description": "devices_page.ip_field_is_readonly_or_disabled() проверяет атрибуты readonly или disabled у #control-device_IPAddress." }
-    ],
-    "teardown": [
-      { "title": "Не сохранять форму", "description": "Запись не создаётся — тест только проверяет редактируемость полей." },
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
-    ]
-  },
-  {
-    "externalId": "ui.devices.list_has_rows_and_clickable",
-    "pytestId": "tests.test_devices_crud_ui::test_devices_list_has_rows_and_row_is_clickable",
-    "classname": "Devices",
-    "displayName": "Список устройств отображается и позволяет открыть запись",
-    "description": "Проверяем, что список .ant-list-item содержит >=1 строку и по строке можно кликнуть — открывается карточка. Если список пуст, тест предварительно создаёт seed-устройство 'AUTOTEST-SEED-<suffix>' с UID 'AUTOTEST-SEED-UID-<suffix>' и комментарием 'seed for read'.",
-    "setup": [
-      { "title": "Раздел Devices открыт", "description": "После DevicesPage.open() — URL /list/devices, шапка загружена." }
-    ],
-    "steps": [
-      { "title": "Дождаться появления строк (до 8с)", "description": "devices_page.wait_until_has_rows(timeout_ms=8000) — пуллит page.locator('.ant-list-item').count() пока > 0 или таймаут." },
-      { "title": "Если список пуст — создать seed", "description": "open_create_form() → fill(name='AUTOTEST-SEED-<suffix>', uid='AUTOTEST-SEED-UID-<suffix>', comment='seed for read') → select_device_type_if_needed() → save_form() → apply_changes()." },
-      { "title": "Снова дождаться строк (до 15с)", "description": "wait_until_has_rows(timeout_ms=15000). assert rows > 0." },
-      { "title": "Кликнуть по первой строке", "description": "devices_page.click_first_row() → .ant-list-item.first.click()." },
-      { "title": "Подождать загрузку карточки (~400ms)", "description": "page.wait_for_timeout(400) после клика." },
-      { "title": "Проверить, что карточка открылась", "description": "assert click_first_row() вернул True (форма карточки видна)." }
-    ],
-    "teardown": [
-      { "title": "Seed-устройство остаётся в системе", "description": "Не удаляется автоматически (только для destructive-теста). Помечено префиксом AUTOTEST-SEED-* для ручной зачистки при необходимости." },
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
-    ]
-  },
-  {
-    "externalId": "ui.devices.create_cancel_closes_form",
-    "pytestId": "tests.test_devices_crud_ui::test_devices_create_cancel_closes_form",
-    "classname": "Devices",
-    "displayName": "Отмена создания устройства закрывает форму без сохранения",
-    "description": "Открываем форму New device, заполняем тестовыми данными AUTOTEST-CANCEL-<suffix> / AUTOTEST-UID-<suffix> / 'cancel flow', нажимаем Cancel. Проверяем, что форма закрылась (поле Name перестало быть видимым).",
-    "setup": [
-      { "title": "Раздел Devices открыт", "description": "После DevicesPage.open() — URL /list/devices." }
-    ],
-    "steps": [
-      { "title": "Открыть форму создания", "description": "devices_page.open_create_form()." },
-      { "title": "Сгенерировать suffix = str(int(time.time()))", "description": "Уникальность данных в рамках прогона." },
-      { "title": "Заполнить Name = 'AUTOTEST-CANCEL-<suffix>'", "description": "page.locator('#control-device_Name').fill('AUTOTEST-CANCEL-1748257215')." },
-      { "title": "Заполнить UID = 'AUTOTEST-UID-<suffix>'", "description": "page.locator('#control-device_UniqueDeviceID').fill('AUTOTEST-UID-1748257215')." },
-      { "title": "Заполнить Comment = 'cancel flow'", "description": "page.locator('#control-device_Comment').fill('cancel flow')." },
-      { "title": "Нажать Cancel", "description": "devices_page.cancel_form() — кликает по кнопке с текстом 'Cancel' (или 'Отмена')." },
-      { "title": "Проверить, что форма закрылась", "description": "expect(page.locator('#control-device_Name')).not_to_be_visible() — поля больше не видны." }
-    ],
-    "teardown": [
-      { "title": "Запись не должна быть в списке", "description": "При корректном Cancel в /list/devices не должно быть строки 'AUTOTEST-CANCEL-<suffix>'." },
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
-    ]
-  },
-  {
-    "externalId": "ui.devices.full_crud_destructive_flagged",
-    "pytestId": "tests.test_devices_crud_ui::test_devices_full_crud_destructive_flagged",
-    "classname": "Devices",
-    "displayName": "CRUD: создать устройство и удалить это же устройство",
-    "description": "Полный CRUD-цикл: создаём устройство AUTOTEST-DESTRUCTIVE-<suffix> с UID AUTOTEST-DESTRUCTIVE-UID-<suffix>, комментарий 'destructive crud'. Под флагом env RUN_DESTRUCTIVE_DEVICES_CRUD=true (1/yes) — подтверждает удаление и проверяет, что записи нет; без флага — отменяет диалог и проверяет, что запись осталась.",
-    "setup": [
-      { "title": "Раздел Devices открыт", "description": "После DevicesPage.open() — URL /list/devices." },
-      { "title": "Стенд позволяет удалять данные", "description": "Только тест-стенд. Дефолт: RUN_DESTRUCTIVE_DEVICES_CRUD=false (удаление имитируется отменой)." }
-    ],
-    "steps": [
-      { "title": "Сгенерировать suffix = str(int(time.time()))", "description": "device_name = 'AUTOTEST-DESTRUCTIVE-<suffix>', device_uid = 'AUTOTEST-DESTRUCTIVE-UID-<suffix>'." },
-      { "title": "Открыть форму создания", "description": "devices_page.open_create_form()." },
-      { "title": "Заполнить Name / UID / Comment", "description": "fill_device_form(name=device_name, uid=device_uid, comment='destructive crud')." },
-      { "title": "Выбрать тип устройства", "description": "select_device_type_if_needed() — пробует нативный <select>, фолбэк на AntD Select (.ant-select-item-option, первый вариант)." },
-      { "title": "Сохранить (Save + Apply)", "description": "save_form() кликает 'Save', apply_changes() кликает 'Apply'. Запись попадает в БД." },
-      { "title": "Проверить, что устройство в списке", "description": "wait_until_has_rows(15000) + device_exists_in_list(device_name) → True. assert exists_after_create." },
-      { "title": "Инициировать удаление", "description": "delete_device_by_name_from_list(device_name) кликает по кнопке удаления в строке списка; фолбэк — open_device_by_name + trigger_delete_current_device." },
-      { "title": "Проверить, что появился диалог", "description": "delete_dialog_visible() — .ant-modal или [role='dialog']." },
-      { "title": "Подтвердить / отменить по флагу", "description": "Если RUN_DESTRUCTIVE_DEVICES_CRUD=true → confirm_delete_dialog() (клик по .ant-btn-dangerous или 'Delete'/'OK'). Иначе → cancel_delete_dialog() (клик 'Cancel'/'Отмена')." },
-      { "title": "Применить и проверить итог", "description": "apply_changes() → open() (refresh) → wait_until_has_rows(10000). Под флагом: assert NOT device_exists_in_list(device_name). Без флага: assert device_exists_in_list(device_name)." }
-    ],
-    "teardown": [
-      { "title": "Без флага запись остаётся", "description": "Префикс AUTOTEST-DESTRUCTIVE-* — маркер для ручной зачистки на дев-стенде." },
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
+      {
+        "title": "Закрыть browser context",
+        "description": "pytest-playwright fixture `page` teardown."
+      }
     ]
   },
   {
@@ -329,30 +395,80 @@
     "displayName": "Создать устройство, переименовать и удалить",
     "description": "Полный CRUD устройства (DevicesCRUD): логин → переключение языка на RU → /list/devices → создать с Name = 'auto-device-<unix-ts>', UID = 'auto-uid-<ts>', Type (AntD/native Select) → get_by_text('Save'/'Сохранить') + Apply → проверить в .ant-list-item и форме (#control-device_*) → переименовать Name → удалить кнопкой в строке списка (фолбэк: открыть запись + Delete) → подтвердить → Apply → проверить отсутствие в списке.",
     "setup": [
-      { "title": "Стенд доступен", "description": "https://localhost:8001/user/login возвращает 200." },
-      { "title": "Существует пользователь Admin/123", "description": "Либо TEST_USER_LOGIN/TEST_USER_PASSWORD." },
-      { "title": "Раздел Devices доступен", "description": "URL: https://localhost:8001/list/devices. Список — .ant-list-item с кнопкой создания New device / Новое устройство / Создать." }
+      {
+        "title": "Стенд доступен",
+        "description": "https://localhost:8001/user/login возвращает 200."
+      },
+      {
+        "title": "Существует пользователь Admin/123",
+        "description": "Либо TEST_USER_LOGIN/TEST_USER_PASSWORD."
+      },
+      {
+        "title": "Раздел Devices доступен",
+        "description": "URL: https://localhost:8001/list/devices. Список — .ant-list-item с кнопкой создания New device / Новое устройство / Создать."
+      }
     ],
     "steps": [
-      { "title": "Сгенерировать тестовые данные", "description": "suffix = str(int(time.time())); unique_name = f'auto-device-{suffix}'; unique_uid = f'auto-uid-{suffix}'; renamed_name = f'redact-auto-device-{suffix}'. allure.dynamic.parameter сохраняет значения в отчёт." },
-      { "title": "Открыть страницу логина", "description": "login_page.open() → goto https://localhost:8001/user/login." },
-      { "title": "Переключить язык интерфейса на RU", "description": "login_page.switch_language_to_russian() — нужен для кнопок «Создать»/«Сохранить»/«Удалить»." },
-      { "title": "Выполнить вход", "description": "login_page.login(TEST_USER_LOGIN, TEST_USER_PASSWORD) + page.wait_for_timeout(2000). Если остались на /user/login — fallback: login('admin', password)." },
-      { "title": "Открыть раздел Devices", "description": "devices_page.open() → goto /list/devices. assert_loaded(): кнопка New device / Создать / anticon-plus." },
-      { "title": "Создать устройство", "description": "open_create_form() → fill_device_form(unique_name, unique_uid, comment) → select_device_type_if_needed() → save_and_apply() (get_by_text Save/Сохранить + Apply/Применить)." },
-      { "title": "Проверить создание в списке", "description": "wait_until_device_in_list(unique_name): search_device_in_list (input в #scrollable-container + иконка лупы) → .ant-list-item с текстом unique_name." },
-      { "title": "Проверить создание в форме", "description": "open_device_edit_form_by_name(unique_name): в строке .ant-list-item клик button.action-menu-dropdown-btn (anticon-more) → пункт «Редактировать» → expect(#control-device_Name)=unique_name, #control-device_UniqueDeviceID=unique_uid." },
-      { "title": "Переименовать устройство", "description": "На открытой форме fill #control-device_Name = renamed_name → save_and_apply(refresh_list=True)." },
-      { "title": "Проверить новое имя в списке и форме", "description": "find_device_in_list(renamed_name) → open_device_edit_form_by_name(renamed_name, search=False) → expect(#control-device_Name).to_have_value(renamed_name)." },
-      { "title": "Удалить устройство", "description": "delete_device_and_confirm(renamed_name): search_device_in_list → button.action-menu-dropdown-btn (anticon-more) → «Удалить» → confirm_delete_in_visible_modal (1-е модальное окно) → confirm_delete_in_visible_modal (2-е подтверждение) → apply_changes_if_present." },
-      { "title": "Проверить удаление", "description": "open() → wait_until_has_rows(10000) → wait_until_device_not_in_list(renamed_name)." }
+      {
+        "title": "Сгенерировать тестовые данные",
+        "description": "suffix = str(int(time.time())); unique_name = f'auto-device-{suffix}'; unique_uid = f'auto-uid-{suffix}'; renamed_name = f'redact-auto-device-{suffix}'. allure.dynamic.parameter сохраняет значения в отчёт."
+      },
+      {
+        "title": "Открыть страницу логина",
+        "description": "login_page.open() → goto https://localhost:8001/user/login."
+      },
+      {
+        "title": "Переключить язык интерфейса на RU",
+        "description": "login_page.switch_language_to_russian() — нужен для кнопок «Создать»/«Сохранить»/«Удалить»."
+      },
+      {
+        "title": "Выполнить вход",
+        "description": "login_page.login(TEST_USER_LOGIN, TEST_USER_PASSWORD) + page.wait_for_timeout(2000). Если остались на /user/login — fallback: login('admin', password)."
+      },
+      {
+        "title": "Открыть раздел Devices",
+        "description": "devices_page.open() → goto /list/devices. assert_loaded(): кнопка New device / Создать / anticon-plus."
+      },
+      {
+        "title": "Создать устройство",
+        "description": "open_create_form() → fill_device_form(unique_name, unique_uid, comment) → select_device_type_if_needed() → save_and_apply() (get_by_text Save/Сохранить + Apply/Применить)."
+      },
+      {
+        "title": "Проверить создание в списке",
+        "description": "wait_until_device_found_by_search(unique_name): search_device_in_list → .ant-list-item с текстом unique_name."
+      },
+      {
+        "title": "Проверить создание в форме",
+        "description": "open_device_edit_form_by_name(unique_name): в строке .ant-list-item клик button.action-menu-dropdown-btn (anticon-more) → пункт «Редактировать» → expect(#control-device_Name)=unique_name, #control-device_UniqueDeviceID=unique_uid."
+      },
+      {
+        "title": "Переименовать устройство",
+        "description": "На открытой форме fill #control-device_Name = renamed_name → save_and_apply(refresh_list=True)."
+      },
+      {
+        "title": "Проверить новое имя в списке",
+        "description": "wait_until_device_found_by_search(renamed_name): поиск в списке после переименования."
+      },
+      {
+        "title": "Удалить устройство",
+        "description": "delete_device_and_confirm(renamed_name): search_device_in_list → button.action-menu-dropdown-btn (anticon-more) → «Удалить» → confirm_delete_in_visible_modal (1-е модальное окно) → confirm_delete_in_visible_modal (2-е подтверждение) → apply_changes_if_present."
+      },
+      {
+        "title": "Проверить удаление",
+        "description": "refresh_list_once() → search_device_in_list(renamed_name) → assert not device_exists_in_list(renamed_name)."
+      }
     ],
     "teardown": [
-      { "title": "Запись удалена на стенде", "description": "Деструктивный сценарий — тестовое устройство не остаётся после прогона." },
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
+      {
+        "title": "Запись удалена на стенде",
+        "description": "Деструктивный сценарий — тестовое устройство не остаётся после прогона."
+      },
+      {
+        "title": "Закрыть browser context",
+        "description": "pytest-playwright fixture `page` teardown."
+      }
     ]
   },
-
   {
     "externalId": "ui.personnel.full_crud_destructive_flagged",
     "pytestId": "tests.test_personnel_crud_ui::test_personnel_full_crud_destructive_flagged",
@@ -360,28 +476,72 @@
     "displayName": "CRUD: создать тестового сотрудника и удалить его",
     "description": "Сценарий создания и удаления сотрудника в справочнике Personnel (Directories): авторизация → переход на /list/personnel?tab=Personnel → создать сотрудника с фамилией 'AUTOLAST-<unix-ts>' и табельным номером 'AUTOLAST-<ts>' (#PersonnelEditor_Number) → Save + Apply → найти запись в таблице MUI/AntD (фильтр All, поиск по номеру/фамилии) → при RUN_DESTRUCTIVE_PERSONNEL_CRUD=true: выделить строку (checkbox / Toggle select all) → Delete на тулбаре → подтвердить → проверить отсутствие; при false (по умолчанию): открыть диалог удаления → Cancel → запись остаётся. Маркер зачистки: префикс 'AUTOLAST-'.",
     "setup": [
-      { "title": "Стенд доступен", "description": "https://localhost:8001/user/login возвращает 200." },
-      { "title": "Существует пользователь Admin/123", "description": "Либо TEST_USER_LOGIN/TEST_USER_PASSWORD." },
-      { "title": "Раздел Personnel доступен", "description": "URL: https://localhost:8001/list/personnel?tab=Personnel (фолбэки: /list/personal, /list/staff, /list/employees, /directories/personnel)." }
+      {
+        "title": "Стенд доступен",
+        "description": "https://localhost:8001/user/login возвращает 200."
+      },
+      {
+        "title": "Существует пользователь Admin/123",
+        "description": "Либо TEST_USER_LOGIN/TEST_USER_PASSWORD."
+      },
+      {
+        "title": "Раздел Personnel доступен",
+        "description": "URL: https://localhost:8001/list/personnel?tab=Personnel (фолбэки: /list/personal, /list/staff, /list/employees, /directories/personnel)."
+      }
     ],
     "steps": [
-      { "title": "Сгенерировать suffix = str(int(time.time()))", "description": "person_name = 'AUTOLAST-<suffix>', personnel_number = 'AUTOLAST-<suffix>'. allure.dynamic.parameter сохраняет значения в отчёт." },
-      { "title": "Открыть раздел Personnel", "description": "personnel_page.open() — логин Admin/123 → goto /list/personnel?tab=Personnel. assert_loaded() проверяет URL раздела." },
-      { "title": "Открыть форму создания сотрудника", "description": "personnel_page.open_create_form() — клик по button:has-text('Создать') / 'Create' / button.index_button с иконкой '+'. Ожидание editable-полей или URL /list/personnel/<id>." },
-      { "title": "Заполнить обязательные поля", "description": "fill_required_fields(unique_suffix=suffix): Last name = 'AUTOLAST-<suffix>', доп. поля AUTONAME-/AUTOMID-/AUTOTEST-<suffix>, табельный номер в #PersonnelEditor_Number = 'AUTOLAST-<suffix>'. Возвращает (person_name, personnel_number)." },
-      { "title": "Сохранить запись (Save + Apply)", "description": "save_form() кликает Save/Сохранить → apply_changes_if_present() кликает Apply/Применить. ensure_person_saved() best-effort — URL может не смениться на /list/personnel/<id>." },
-      { "title": "Получить id сотрудника (best-effort)", "description": "current_person_id() из URL /list/personnel/(\\d+). Фолбэк recover_person_id_from_list(person_name, personnel_number). id может остаться None — валидация по имени/номеру." },
-      { "title": "Вернуться в список и найти созданную запись", "description": "go_back_to_personnel_list() (best-effort) → personnel_page.open() → ensure_all_filter_selected() → search_person_in_list(personnel_number или person_name) → person_exists_in_table в .ant-table-tbody / .MuiTableBody-root." },
-      { "title": "Проверить наличие в списке", "description": "При RUN_DESTRUCTIVE_PERSONNEL_CRUD=true → assert found_in_list. При false — soft warning в allure при race UI, тест продолжается." },
-      { "title": "Удалить через чекбокс + Delete на тулбаре (destructive)", "description": "Только при RUN_DESTRUCTIVE_PERSONNEL_CRUD=true. delete_person_from_list_via_toolbar(..., confirm=True): hover/click строки → check row checkbox или header input[aria-label='Toggle select all'] → Delete на тулбаре → confirm в .ant-modal → assert NOT person_exists_in_table." },
-      { "title": "Открыть диалог удаления и нажать Cancel (non-destructive)", "description": "Только при RUN_DESTRUCTIVE_PERSONNEL_CRUD=false. delete_person_from_list_via_toolbar(..., confirm=False) или trigger_delete_dialog_on_person_card(id) → cancel_delete_dialog_if_visible() → запись остаётся в системе." }
+      {
+        "title": "Сгенерировать suffix = str(int(time.time()))",
+        "description": "person_name = 'AUTOLAST-<suffix>', personnel_number = 'AUTOLAST-<suffix>'. allure.dynamic.parameter сохраняет значения в отчёт."
+      },
+      {
+        "title": "Открыть раздел Personnel",
+        "description": "personnel_page.open() — логин Admin/123 → goto /list/personnel?tab=Personnel. assert_loaded() проверяет URL раздела."
+      },
+      {
+        "title": "Открыть форму создания сотрудника",
+        "description": "personnel_page.open_create_form() — клик по button:has-text('Создать') / 'Create' / button.index_button с иконкой '+'. Ожидание editable-полей или URL /list/personnel/<id>."
+      },
+      {
+        "title": "Заполнить обязательные поля",
+        "description": "fill_required_fields(unique_suffix=suffix): Last name = 'AUTOLAST-<suffix>', доп. поля AUTONAME-/AUTOMID-/AUTOTEST-<suffix>, табельный номер в #PersonnelEditor_Number = 'AUTOLAST-<suffix>'. Возвращает (person_name, personnel_number)."
+      },
+      {
+        "title": "Сохранить запись (Save + Apply)",
+        "description": "save_form() кликает Save/Сохранить → apply_changes_if_present() кликает Apply/Применить. ensure_person_saved() best-effort — URL может не смениться на /list/personnel/<id>."
+      },
+      {
+        "title": "Получить id сотрудника (best-effort)",
+        "description": "current_person_id() из URL /list/personnel/(\\d+). Фолбэк recover_person_id_from_list(person_name, personnel_number). id может остаться None — валидация по имени/номеру."
+      },
+      {
+        "title": "Вернуться в список и найти созданную запись",
+        "description": "go_back_to_personnel_list() (best-effort) → personnel_page.open() → ensure_all_filter_selected() → search_person_in_list(personnel_number или person_name) → person_exists_in_table в .ant-table-tbody / .MuiTableBody-root."
+      },
+      {
+        "title": "Проверить наличие в списке",
+        "description": "При RUN_DESTRUCTIVE_PERSONNEL_CRUD=true → assert found_in_list. При false — soft warning в allure при race UI, тест продолжается."
+      },
+      {
+        "title": "Удалить через чекбокс + Delete на тулбаре (destructive)",
+        "description": "Только при RUN_DESTRUCTIVE_PERSONNEL_CRUD=true. delete_person_from_list_via_toolbar(..., confirm=True): hover/click строки → check row checkbox или header input[aria-label='Toggle select all'] → Delete на тулбаре → confirm в .ant-modal → assert NOT person_exists_in_table."
+      },
+      {
+        "title": "Открыть диалог удаления и нажать Cancel (non-destructive)",
+        "description": "Только при RUN_DESTRUCTIVE_PERSONNEL_CRUD=false. delete_person_from_list_via_toolbar(..., confirm=False) или trigger_delete_dialog_on_person_card(id) → cancel_delete_dialog_if_visible() → запись остаётся в системе."
+      }
     ],
     "teardown": [
-      { "title": "При non-destructive запись остаётся на стенде", "description": "Префикс 'AUTOLAST-' — маркер для ручной зачистки в UI." },
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
+      {
+        "title": "При non-destructive запись остаётся на стенде",
+        "description": "Префикс 'AUTOLAST-' — маркер для ручной зачистки в UI."
+      },
+      {
+        "title": "Закрыть browser context",
+        "description": "pytest-playwright fixture `page` teardown."
+      }
     ]
   },
-
   {
     "externalId": "ui.production_units_crud.full_crud",
     "pytestId": "tests.test_production_units_crud::test_production_units_crud",
@@ -389,140 +549,82 @@
     "displayName": "Создать подразделение, переименовать и удалить production unit",
     "description": "Полный CRUD подразделения (ProductionUnitsCRUD): логин → переключение языка на RU → /list/production-structure?tab=productionUnits → создать с Code = 'APU-<unix-ts>' (макс 18), Name = 'auto-pu-<ts>', Type ≠ Enterprise, Parent (TreeSelect) → Save + Apply → проверить на карточке и в иерархическом MUI-списке (кнопка «Раскрыть» + поиск) → переименовать Name на 'redact-auto-pu-<ts>' → открыть карточку по id → Delete (ant-btn-dangerous icon-only с корзиной) → подтвердить «Удалить» → Apply → проверить отсутствие в списке и недоступность карточки.",
     "setup": [
-      { "title": "Стенд доступен", "description": "https://localhost:8001/user/login возвращает 200." },
-      { "title": "Существует пользователь Admin/123", "description": "Либо TEST_USER_LOGIN/TEST_USER_PASSWORD." },
-      { "title": "Раздел Production units доступен", "description": "URL: https://localhost:8001/list/production-structure?tab=productionUnits. Список — иерархическая MUI-таблица (tree) с кнопкой «Раскрыть» и поиском в тулбаре." }
+      {
+        "title": "Стенд доступен",
+        "description": "https://localhost:8001/user/login возвращает 200."
+      },
+      {
+        "title": "Существует пользователь Admin/123",
+        "description": "Либо TEST_USER_LOGIN/TEST_USER_PASSWORD."
+      },
+      {
+        "title": "Раздел Production units доступен",
+        "description": "URL: https://localhost:8001/list/production-structure?tab=productionUnits. Список — иерархическая MUI-таблица (tree) с кнопкой «Раскрыть» и поиском в тулбаре."
+      }
     ],
     "steps": [
-      { "title": "Сгенерировать тестовые данные", "description": "suffix = str(int(time.time())); unique_code = f'APU-{suffix}'[:18]; unique_name = f'auto-pu-{suffix}'; renamed_name = f'redact-auto-pu-{suffix}'. allure.dynamic.parameter сохраняет значения в отчёт." },
-      { "title": "Открыть страницу логина", "description": "login_page.open() → goto https://localhost:8001/user/login." },
-      { "title": "Переключить язык интерфейса на RU", "description": "login_page.switch_language_to_russian() — нужен для кнопок «Создать»/«Раскрыть»/«Удалить»." },
-      { "title": "Выполнить вход", "description": "login_page.login(TEST_USER_LOGIN, TEST_USER_PASSWORD) + page.wait_for_timeout(2000). Если остались на /user/login — fallback: login('admin', password)." },
-      { "title": "Открыть раздел Production units", "description": "production_units_page.open() → goto /list/production-structure?tab=productionUnits. assert_loaded(): table.MuiTable-root и первая видимая кнопка Create/Создать (index_button__EOmvq)." },
-      { "title": "Создать подразделение", "description": "open_create_form() → fill_code_and_name(unique_code, unique_name) → fill_mandatory_selects_for_new_unit() (Type ≠ Enterprise, Parent TreeSelect, Status) → save_until_persisted() с ретраями Save/Apply до /production-unit/<id>." },
-      { "title": "Получить unit_id", "description": "current_unit_id() из URL /production-structure/production-unit/(\\d+). Фолбэк recover_unit_id_from_list(unique_code, unique_name). assert unit_id != '0'." },
-      { "title": "Проверить создание на карточке", "description": "open_unit_by_id(unit_id) → expect(#ProductionUnit_Code).to_have_value(unique_code) и #ProductionUnit_Name = unique_name." },
-      { "title": "Проверить создание в списке", "description": "wait_until_unit_in_table(unit_id, unique_code, unique_name): go_to_list() → expand_all_tree_rows_if_present() (кнопка «Раскрыть» / Expand all) → search_unit_in_list(unique_code) → строка по a[href*='/production-unit/{unit_id}'] или по тексту Code/Name." },
-      { "title": "Переименовать подразделение", "description": "open_unit_by_id(unit_id) → fill #ProductionUnit_Name = renamed_name → save_form() → apply_changes_if_present()." },
-      { "title": "Проверить новое имя на карточке и в списке", "description": "open_unit_by_id(unit_id) → expect(#ProductionUnit_Name).to_have_value(renamed_name); wait_until_unit_in_table(unit_id, unique_code, renamed_name)." },
-      { "title": "Удалить подразделение с карточки", "description": "delete_unit_from_card_and_confirm(unit_id): open_unit_by_id(unit_id) → trigger_delete_on_card() (button.ant-btn-dangerous.ant-btn-icon-only с иконкой корзины, не Save) → wait_for_delete_dialog() → confirm_delete_dialog() (кнопка «Удалить») → apply_changes_if_present()." },
-      { "title": "Проверить удаление", "description": "wait_until_unit_not_in_table(unit_id, unique_code, renamed_name); open_unit_by_id(unit_id) — карточка с Code != unique_code или id недоступен." }
+      {
+        "title": "Сгенерировать тестовые данные",
+        "description": "suffix = str(int(time.time())); unique_code = f'APU-{suffix}'[:18]; unique_name = f'auto-pu-{suffix}'; renamed_name = f'redact-auto-pu-{suffix}'. allure.dynamic.parameter сохраняет значения в отчёт."
+      },
+      {
+        "title": "Открыть страницу логина",
+        "description": "login_page.open() → goto https://localhost:8001/user/login."
+      },
+      {
+        "title": "Переключить язык интерфейса на RU",
+        "description": "login_page.switch_language_to_russian() — нужен для кнопок «Создать»/«Раскрыть»/«Удалить»."
+      },
+      {
+        "title": "Выполнить вход",
+        "description": "login_page.login(TEST_USER_LOGIN, TEST_USER_PASSWORD) + page.wait_for_timeout(2000). Если остались на /user/login — fallback: login('admin', password)."
+      },
+      {
+        "title": "Открыть раздел Production units",
+        "description": "production_units_page.open() → goto /list/production-structure?tab=productionUnits. assert_loaded(): table.MuiTable-root и первая видимая кнопка Create/Создать (index_button__EOmvq)."
+      },
+      {
+        "title": "Создать подразделение",
+        "description": "open_create_form() → fill_code_and_name(unique_code, unique_name) → fill_mandatory_selects_for_new_unit() (Type ≠ Enterprise, Parent TreeSelect, Status) → save_until_persisted() с ретраями Save/Apply до /production-unit/<id>."
+      },
+      {
+        "title": "Получить unit_id",
+        "description": "current_unit_id() из URL /production-structure/production-unit/(\\d+). Фолбэк recover_unit_id_from_list(unique_code, unique_name). assert unit_id != '0'."
+      },
+      {
+        "title": "Проверить создание на карточке",
+        "description": "open_unit_by_id(unit_id) → expect(#ProductionUnit_Code).to_have_value(unique_code) и #ProductionUnit_Name = unique_name."
+      },
+      {
+        "title": "Проверить создание в списке",
+        "description": "wait_until_unit_in_table(unit_id, unique_code, unique_name): go_to_list() → expand_all_tree_rows_if_present() (кнопка «Раскрыть» / Expand all) → search_unit_in_list(unique_code) → строка по a[href*='/production-unit/{unit_id}'] или по тексту Code/Name."
+      },
+      {
+        "title": "Переименовать подразделение",
+        "description": "open_unit_by_id(unit_id) → fill #ProductionUnit_Name = renamed_name → save_form() → apply_changes_if_present()."
+      },
+      {
+        "title": "Проверить новое имя на карточке и в списке",
+        "description": "open_unit_by_id(unit_id) → expect(#ProductionUnit_Name).to_have_value(renamed_name); wait_until_unit_in_table(unit_id, unique_code, renamed_name)."
+      },
+      {
+        "title": "Удалить подразделение с карточки",
+        "description": "delete_unit_from_card_and_confirm(unit_id): open_unit_by_id(unit_id) → trigger_delete_on_card() (button.ant-btn-dangerous.ant-btn-icon-only с иконкой корзины, не Save) → wait_for_delete_dialog() → confirm_delete_dialog() (кнопка «Удалить») → apply_changes_if_present()."
+      },
+      {
+        "title": "Проверить удаление",
+        "description": "wait_until_unit_not_in_table(unit_id, unique_code, renamed_name); open_unit_by_id(unit_id) — карточка с Code != unique_code или id недоступен."
+      }
     ],
     "teardown": [
-      { "title": "Запись удалена на стенде", "description": "Деструктивный сценарий — тестовое подразделение не остаётся после прогона." },
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
-    ]
-  },
-  {
-    "externalId": "ui.production_units.page_opened",
-    "pytestId": "tests.test_production_units_crud_ui::test_production_units_page_opened",
-    "classname": "ProductionUnits",
-    "displayName": "Список Production units открывается и показывает таблицу и Create",
-    "description": "Smoke-проверка раздела Production structure → Production units: открывается список, видна MUI-таблица и кнопка Create. URL: https://localhost:8001/list/production-structure?tab=productionUnits.",
-    "setup": [
-      { "title": "Авторизация Admin/123 успешна", "description": "ProductionUnitsPage.open() сам логинится и переходит на /list/production-structure?tab=productionUnits." },
-      { "title": "Раздел Production structure доступен", "description": "На стенде включена соответствующая фича/права." }
-    ],
-    "steps": [
-      { "title": "Логин и переход в раздел", "description": "ProductionUnitsPage.open() — fill #login='Admin' / #password='123' → submit → goto /list/production-structure?tab=productionUnits." },
-      { "title": "Дождаться загрузки страницы", "description": "wait_for_load_state('domcontentloaded') + небольшой буфер." },
-      { "title": "Проверить наличие MUI-таблицы", "description": "page.locator('table.MuiTable-root').count() > 0 и видимость." },
-      { "title": "Проверить наличие кнопки Create", "description": "production_units_page.assert_loaded() ищет кнопку Create / Создать / иконку plus." }
-    ],
-    "teardown": [
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
-    ]
-  },
-  {
-    "externalId": "ui.production_units.create_form_has_required_fields",
-    "pytestId": "tests.test_production_units_crud_ui::test_production_units_create_form_has_required_fields",
-    "classname": "ProductionUnits",
-    "displayName": "Форма создания production unit содержит обязательные контролы",
-    "description": "Открываем форму создания и проверяем ключевые поля: Code (#ProductionUnit_Code), Name (#ProductionUnit_Name), Type (AntD Select), Parent (AntD TreeSelect). Без сохранения — только проверка структуры формы.",
-    "setup": [
-      { "title": "Раздел Production units открыт", "description": "После ProductionUnitsPage.open() — URL /list/production-structure?tab=productionUnits." }
-    ],
-    "steps": [
-      { "title": "Открыть форму создания", "description": "production_units_page.open_create_form() — клик 'Create' или прямой переход /list/production-structure/production-unit/0." },
-      { "title": "Дождаться появления формы", "description": "page.locator('#ProductionUnit_Code').wait_for(state='visible')." },
-      { "title": "Проверить наличие поля Code", "description": "#ProductionUnit_Code (input). count() > 0." },
-      { "title": "Проверить наличие поля Name", "description": "#ProductionUnit_Name (input). count() > 0." },
-      { "title": "Проверить наличие поля Type", "description": "AntD Select (контейнер с #ProductionUnit_ProductionUnitTypeId или аналогичный). count() > 0." },
-      { "title": "Проверить наличие поля Parent", "description": "AntD TreeSelect (контейнер с #ProductionUnit_ParentId). count() > 0. assert has_required_form_controls() == True." }
-    ],
-    "teardown": [
-      { "title": "Не сохранять форму", "description": "Тест read-only по сути — запись не создаётся." },
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
-    ]
-  },
-  {
-    "externalId": "ui.production_units.create_cancel_if_available",
-    "pytestId": "tests.test_production_units_crud_ui::test_production_units_create_cancel_if_available",
-    "classname": "ProductionUnits",
-    "displayName": "Отмена: кнопка Cancel закрывает черновик, если доступна",
-    "description": "Если на форме создания есть кнопка Cancel — заполняем минимум полей (Code = 'X-<unix-ts>', Name = 'Cancel-<unix-ts>') и проверяем, что Cancel закрывает форму без сохранения. В текущей сборке UI кнопки Cancel нет, поэтому тест корректно скипается.",
-    "setup": [
-      { "title": "Раздел Production units открыт", "description": "После ProductionUnitsPage.open()." },
-      { "title": "На форме есть кнопка Cancel", "description": "Иначе pytest.skip('Cancel на форме не найден')." }
-    ],
-    "steps": [
-      { "title": "Открыть форму создания", "description": "production_units_page.open_create_form(). assert вернул True." },
-      { "title": "Сгенерировать suffix = int(time.time())", "description": "Например, suffix=1748257215." },
-      { "title": "Заполнить Code = 'X-<suffix>'", "description": "page.locator('#ProductionUnit_Code').fill('X-1748257215')." },
-      { "title": "Заполнить Name = 'Cancel-<suffix>'", "description": "page.locator('#ProductionUnit_Name').fill('Cancel-1748257215')." },
-      { "title": "Попробовать нажать Cancel", "description": "production_units_page.cancel_form_if_present() — клик по 'Cancel'/'Отмена', если есть." },
-      { "title": "Проверить URL после попытки отмены", "description": "Если URL всё ещё /production-unit/0 → pytest.skip('Cancel на форме не найден — сценарий отмены не применим'). Иначе — тест считается пройденным." }
-    ],
-    "teardown": [
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
-    ]
-  },
-  {
-    "externalId": "ui.production_units.table_visible",
-    "pytestId": "tests.test_production_units_crud_ui::test_production_units_table_visible",
-    "classname": "ProductionUnits",
-    "displayName": "Таблица production units отрисована",
-    "description": "Проверяем, что список production units рендерится как MUI-таблица (table.MuiTable-root) с tbody. Пустой список тоже допустим — главное, чтобы DOM-структура отрисовалась.",
-    "setup": [
-      { "title": "Раздел Production units открыт", "description": "После ProductionUnitsPage.open()." }
-    ],
-    "steps": [
-      { "title": "Логин и переход в раздел", "description": "ProductionUnitsPage.open() → goto /list/production-structure?tab=productionUnits." },
-      { "title": "Найти tbody таблицы", "description": "page.locator('table.MuiTable-root tbody tr')." },
-      { "title": "Подсчитать строки", "description": "rows = locator.count(). Записать в allure-attachment 'tbody row count'." },
-      { "title": "Проверить, что count >= 0", "description": "assert rows >= 0. (Само условие тривиально, главная цель — увидеть, что DOM-структура рендерится без падения)." },
-      { "title": "Передать значение в Allure", "description": "allure.attach(str(rows), 'tbody row count', allure.attachment_type.TEXT) — для диагностики." }
-    ],
-    "teardown": [
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
-    ]
-  },
-  {
-    "externalId": "ui.production_units.update_name_after_create",
-    "pytestId": "tests.test_production_units_crud_ui::test_production_units_update_name_after_create",
-    "classname": "ProductionUnits",
-    "displayName": "После сохранения можно изменить Name на карточке",
-    "description": "Создаём production unit с Code = 'AT-<unix-ts>' (обрезается до 18 символов), Name = 'AUTO1-<unix-ts>'. Type выбираем ≠ 'Enterprise', Parent — через AntD TreeSelect (первый доступный). Сохраняем через save_until_persisted (ретраи до появления id в URL или recovery из списка). Затем открываем запись по id и меняем Name на 'AUTO2-<unix-ts>'. Проверяем, что новое значение сохранилось.",
-    "setup": [
-      { "title": "Раздел Production units открыт", "description": "После ProductionUnitsPage.open()." },
-      { "title": "В справочнике есть валидный Parent", "description": "Должен быть хотя бы один узел в AntD TreeSelect (#ProductionUnit_ParentId)." },
-      { "title": "В справочнике есть Type ≠ 'Enterprise'", "description": "Type 'Enterprise' не подходит, т.к. у него специфическая валидация. Используем первый не-Enterprise." }
-    ],
-    "steps": [
-      { "title": "Открыть форму создания", "description": "production_units_page.open_create_form(). assert True." },
-      { "title": "Сгенерировать suffix = str(int(time.time()))", "description": "code='AT-<suffix>'[:18], name1='AUTO1-<suffix>', name2='AUTO2-<suffix>'. Например: code='AT-1748257215', name1='AUTO1-1748257215', name2='AUTO2-1748257215'." },
-      { "title": "Заполнить Code и Name", "description": "fill_code_and_name(code, name1): page.locator('#ProductionUnit_Code').fill('AT-1748257215') и page.locator('#ProductionUnit_Name').fill('AUTO1-1748257215')." },
-      { "title": "Выбрать Type ≠ 'Enterprise'", "description": "fill_mandatory_selects_for_new_unit() — открывает AntD Select, выбирает первый вариант, не равный 'Enterprise'/'Предприятие'." },
-      { "title": "Выбрать Parent (AntD TreeSelect)", "description": "Тот же helper — кликает по TreeSelect, разворачивает дерево, выбирает первый доступный узел. Возвращает (t_ok=True, p_ok=True, s_ok)." },
-      { "title": "Сохранить с ретраями (save_until_persisted)", "description": "Кликает Save, ждёт смену URL на /production-unit/<digits>. Если 'остался на /0' — retry. Фолбэк: recover_unit_id_from_list(code, name1) — ищет в списке по Code." },
-      { "title": "Получить id созданной записи", "description": "uid = current_unit_id() из URL. assert uid not in (None, '0')." },
-      { "title": "Открыть запись по id", "description": "production_units_page.open_unit_by_id(uid) → goto /list/production-structure/production-unit/<uid>." },
-      { "title": "Изменить Name на name2", "description": "page.locator('#ProductionUnit_Name').fill('AUTO2-1748257215'). Затем save_form() + apply_changes_if_present()." },
-      { "title": "Проверить новое имя", "description": "expect(page.locator('#ProductionUnit_Name')).to_have_value('AUTO2-1748257215', timeout=15_000)." }
-    ],
-    "teardown": [
-      { "title": "Запись остаётся в системе", "description": "Не удаляется автоматически (это Update-тест). Маркер для зачистки: code='AT-*' и name='AUTO2-*'." },
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
+      {
+        "title": "Запись удалена на стенде",
+        "description": "Деструктивный сценарий — тестовое подразделение не остаётся после прогона."
+      },
+      {
+        "title": "Закрыть browser context",
+        "description": "pytest-playwright fixture `page` teardown."
+      }
     ]
   },
   {
@@ -532,31 +634,94 @@
     "displayName": "CRUD: создать/редактировать/удалить роль работника",
     "description": "Полный CRUD-цикл для справочника ролей (Worker Roles): авторизация → переключение языка на RU → переход на /list/workerRoles → создать роль 'auto-role-<unix-ts>' с описанием 'Описание для auto-role-<ts>' → проверить наличие в таблице → отредактировать имя на 'edited-auto-role-<ts>' и описание на 'Обновленное описание для edited-auto-role-<ts>' → проверить → удалить с подтверждением 'Да' → проверить отсутствие. Использует DevExtreme grid (#treeList) и DevExtreme popup-формы.",
     "setup": [
-      { "title": "Стенд доступен", "description": "https://localhost:8001/user/login возвращает 200." },
-      { "title": "Существует пользователь Admin/123", "description": "Либо TEST_USER_LOGIN/TEST_USER_PASSWORD." },
-      { "title": "Раздел Roles доступен", "description": "URL: https://localhost:8001/list/workerRoles (env ROLES_URL)." }
+      {
+        "title": "Стенд доступен",
+        "description": "https://localhost:8001/user/login возвращает 200."
+      },
+      {
+        "title": "Существует пользователь Admin/123",
+        "description": "Либо TEST_USER_LOGIN/TEST_USER_PASSWORD."
+      },
+      {
+        "title": "Раздел Roles доступен",
+        "description": "URL: https://localhost:8001/list/workerRoles (env ROLES_URL)."
+      }
     ],
     "steps": [
-      { "title": "Сгенерировать уникальные имена ролей", "description": "unique_role_name = f'auto-role-{int(time.time())}', edited_role_name = f'edited-{unique_role_name}'. allure.dynamic.parameter('role_name', ...) — попадёт в отчёт." },
-      { "title": "Открыть страницу логина", "description": "login_page.open() → goto https://localhost:8001/user/login." },
-      { "title": "Переключить язык интерфейса на RU", "description": "login_page.switch_language_to_russian() — нужен для совпадения текстов кнопок 'Добавить'/'Сохранить'/'Удалить'." },
-      { "title": "Выполнить вход", "description": "login_page.login('Admin', '123') + page.wait_for_timeout(2000). Если редиректа нет — fallback: повторный login('admin', password)." },
-      { "title": "Перейти на /list/workerRoles", "description": "Если в URL есть auth query-параметры — мержим их в target URL и goto; иначе roles_page.open() → goto roles_url." },
-      { "title": "Проверить, что страница ролей загружена", "description": "roles_page.assert_loaded(): expect(page).to_have_url(re.compile(r'.*/list/workerRoles.*'), timeout=20_000) + expect(add_button).to_be_visible(timeout=20000). add_button = div[role='button'][aria-label='Добавить'] или фолбэки." },
-      { "title": "Нажать кнопку 'Добавить'", "description": "roles_page.create_role(unique_role_name) внутри: expect(add_button).to_be_visible → add_button.click()." },
-      { "title": "Заполнить имя и описание роли", "description": "role_name_input.fill('auto-role-<ts>') (input[data-testid='worker_role_Name'] и фолбэки). role_description_input.fill('Описание для auto-role-<ts>')." },
-      { "title": "Нажать 'Сохранить' и подождать", "description": "save_button.click() + page.wait_for_timeout(2000)." },
-      { "title": "Проверить, что роль появилась в таблице", "description": "roles_page.assert_role_visible('auto-role-<ts>'): expect(_find_role_row(name)).to_be_visible(timeout=20000). _find_role_row ищет в '#treeList tr.dx-data-row' или '.dx-datagrid-rowsview tr' по тексту." },
-      { "title": "Открыть форму редактирования", "description": "roles_page.edit_role(unique, edited): кликаем по строке → expect(edit_button).to_be_visible → edit_button.click()." },
-      { "title": "Изменить имя и описание", "description": "role_name_input.fill('edited-auto-role-<ts>'), role_description_input.fill('Обновленное описание для edited-auto-role-<ts>'). save_button.click() + wait 2с." },
-      { "title": "Проверить отредактированную роль", "description": "assert_role_visible('edited-auto-role-<ts>'): новая строка с новым именем найдена в треелисте." },
-      { "title": "Инициировать удаление", "description": "delete_role('edited-...'): кликаем по строке → delete_button.click()." },
-      { "title": "Подтвердить удаление", "description": "confirm_dialog = .dx-overlay-content:visible/.dx-dialog:visible → внутри ищем кнопку с aria-label='Да' (или роль 'Да'/'Yes'). click(force=True). Ждём, что диалог скрылся (expect(...).to_be_hidden(timeout=10000)); если нет — повторный клик." },
-      { "title": "Проверить, что роль удалена", "description": "assert_role_not_visible('edited-auto-role-<ts>'): expect(_find_role_row(name)).to_have_count(0, timeout=20000)." }
+      {
+        "title": "Сгенерировать уникальные имена ролей",
+        "description": "unique_role_name = f'auto-role-{int(time.time())}', edited_role_name = f'edited-{unique_role_name}'. allure.dynamic.parameter('role_name', ...) — попадёт в отчёт."
+      },
+      {
+        "title": "Открыть страницу логина",
+        "description": "login_page.open() → goto https://localhost:8001/user/login."
+      },
+      {
+        "title": "Переключить язык интерфейса на RU",
+        "description": "login_page.switch_language_to_russian() — нужен для совпадения текстов кнопок 'Добавить'/'Сохранить'/'Удалить'."
+      },
+      {
+        "title": "Выполнить вход",
+        "description": "login_page.login('Admin', '123') + page.wait_for_timeout(2000). Если редиректа нет — fallback: повторный login('admin', password)."
+      },
+      {
+        "title": "Перейти на /list/workerRoles",
+        "description": "Если в URL есть auth query-параметры — мержим их в target URL и goto; иначе roles_page.open() → goto roles_url."
+      },
+      {
+        "title": "Проверить, что страница ролей загружена",
+        "description": "roles_page.assert_loaded(): expect(page).to_have_url(re.compile(r'.*/list/workerRoles.*'), timeout=20_000) + expect(add_button).to_be_visible(timeout=20000). add_button = div[role='button'][aria-label='Добавить'] или фолбэки."
+      },
+      {
+        "title": "Нажать кнопку 'Добавить'",
+        "description": "roles_page.create_role(unique_role_name) внутри: expect(add_button).to_be_visible → add_button.click()."
+      },
+      {
+        "title": "Заполнить имя и описание роли",
+        "description": "role_name_input.fill('auto-role-<ts>') (input[data-testid='worker_role_Name'] и фолбэки). role_description_input.fill('Описание для auto-role-<ts>')."
+      },
+      {
+        "title": "Нажать 'Сохранить' и подождать",
+        "description": "save_button.click() + page.wait_for_timeout(2000)."
+      },
+      {
+        "title": "Проверить, что роль появилась в таблице",
+        "description": "roles_page.assert_role_visible('auto-role-<ts>'): expect(_find_role_row(name)).to_be_visible(timeout=20000). _find_role_row ищет в '#treeList tr.dx-data-row' или '.dx-datagrid-rowsview tr' по тексту."
+      },
+      {
+        "title": "Открыть форму редактирования",
+        "description": "roles_page.edit_role(unique, edited): кликаем по строке → expect(edit_button).to_be_visible → edit_button.click()."
+      },
+      {
+        "title": "Изменить имя и описание",
+        "description": "role_name_input.fill('edited-auto-role-<ts>'), role_description_input.fill('Обновленное описание для edited-auto-role-<ts>'). save_button.click() + wait 2с."
+      },
+      {
+        "title": "Проверить отредактированную роль",
+        "description": "assert_role_visible('edited-auto-role-<ts>'): новая строка с новым именем найдена в треелисте."
+      },
+      {
+        "title": "Инициировать удаление",
+        "description": "delete_role('edited-...'): кликаем по строке → delete_button.click()."
+      },
+      {
+        "title": "Подтвердить удаление",
+        "description": "confirm_dialog = .dx-overlay-content:visible/.dx-dialog:visible → внутри ищем кнопку с aria-label='Да' (или роль 'Да'/'Yes'). click(force=True). Ждём, что диалог скрылся (expect(...).to_be_hidden(timeout=10000)); если нет — повторный клик."
+      },
+      {
+        "title": "Проверить, что роль удалена",
+        "description": "assert_role_not_visible('edited-auto-role-<ts>'): expect(_find_role_row(name)).to_have_count(0, timeout=20000)."
+      }
     ],
     "teardown": [
-      { "title": "При незавершённом удалении остаётся маркер", "description": "Префикс 'auto-role-' / 'edited-auto-role-' — для ручной зачистки." },
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
+      {
+        "title": "При незавершённом удалении остаётся маркер",
+        "description": "Префикс 'auto-role-' / 'edited-auto-role-' — для ручной зачистки."
+      },
+      {
+        "title": "Закрыть browser context",
+        "description": "pytest-playwright fixture `page` teardown."
+      }
     ]
   },
   {
@@ -566,34 +731,106 @@
     "displayName": "CRUD: создать/редактировать/удалить состояние оборудования",
     "description": "Полный CRUD-цикл для состояний оборудования (вкладка 'Состояния' страницы machineParams): авторизация → RU → переход на /list/machineParams → создать состояние 'auto-<unix-ts>' с типом 'Состояние' (по умолчанию форма ставит 'Причина простоя') и Short Name 'auto-<ts>-sn' → проверить → отредактировать на 'redact-auto-<ts>' → проверить → удалить через диалог 'Удаление записи' (подтвердить 'Да') → проверить отсутствие. Полностраничная форма на маршруте .../machineParams/new.",
     "setup": [
-      { "title": "Стенд доступен", "description": "https://localhost:8001/user/login возвращает 200." },
-      { "title": "Существует пользователь Admin/123", "description": "Либо TEST_USER_LOGIN/TEST_USER_PASSWORD." },
-      { "title": "Раздел MachineParams доступен", "description": "URL: https://localhost:8001/list/machineParams (env MACHINE_PARAMS_URL)." }
+      {
+        "title": "Стенд доступен",
+        "description": "https://localhost:8001/user/login возвращает 200."
+      },
+      {
+        "title": "Существует пользователь Admin/123",
+        "description": "Либо TEST_USER_LOGIN/TEST_USER_PASSWORD."
+      },
+      {
+        "title": "Раздел MachineParams доступен",
+        "description": "URL: https://localhost:8001/list/machineParams (env MACHINE_PARAMS_URL)."
+      }
     ],
     "steps": [
-      { "title": "Сгенерировать unique_state_name = 'auto-<unix-ts>'", "description": "Например, 'auto-1748257215'. edited_state_name = 'redact-auto-1748257215'. allure.dynamic.parameter сохраняет имена в отчёт." },
-      { "title": "Открыть /user/login", "description": "login_page.open()." },
-      { "title": "Переключить язык на RU", "description": "login_page.switch_language_to_russian()." },
-      { "title": "Войти как Admin/123", "description": "login_page.login('Admin', '123') + wait 2с. Фолбэк: login('admin', password)." },
-      { "title": "Перейти на /list/machineParams", "description": "Если есть auth query — мержим; иначе machine_params_page.open() → goto machine_params_url." },
-      { "title": "Дождаться загрузки таблицы состояний", "description": "machine_params_page.assert_loaded(): expect(url).to_match(r'.*/list/machineParams.*') + expect(loading_spinner='.ant-spin-spinning').to_have_count(0, 30с) + expect(get_by_text('Наименование', exact=True)).to_be_visible." },
-      { "title": "Нажать 'Добавить'", "description": "machine_params_page.open_create_state_form(): new_state_button (div[role='button'][aria-label='Добавить']:visible / фолбэки) → click(). Возвращает MachineStateFormComponent (полностраничная форма)." },
-      { "title": "Дождаться загрузки формы создания", "description": "MachineStateFormComponent.assert_loaded(): form_container.to_be_visible (контейнер '.FormContainer___QWwNX' или dx-layout-manager c полем 'Наименование'), name_input, short_name_input, save_button — все видимы." },
-      { "title": "Заполнить 'Наименование' = 'auto-<ts>'", "description": "name_input.fill('auto-1748257215'). name_input находится по XPath: //*[contains(@class,'dx-field-item-label-text') and starts-with(normalize-space(.), 'Наименование')]/ancestor::div[contains(@class,'dx-field-item')][1]//input[contains(@class,'dx-texteditor-input')]." },
-      { "title": "Заполнить 'Краткое наименование' = 'auto-<ts>-sn'", "description": "short_name_input.fill('auto-1748257215-sn') (обрезается до 32 символов)." },
-      { "title": "Выбрать тип = 'Состояние'", "description": "_select_state_type_if_present(): clicks .dx-radiogroup .dx-radiobutton:has(.dx-item-content:has-text('Состояние')) — по умолчанию форма ставит тип 'Причина простоя', нужно явно переключить." },
-      { "title": "Нажать 'Сохранить'", "description": "save_button.click() (на тулбаре полностраничной формы — div[role='button'][aria-label='Сохранить']:visible). _wait_form_closed_or_saved() ждёт смены URL (/new уходит) до 10с." },
-      { "title": "Проверить наличие состояния в таблице", "description": "assert_state_visible('auto-<ts>'): _find_row_in_tree ищет строку в '.dx-treelist tr.dx-data-row:visible' / '.dx-datagrid tr.dx-data-row:visible' / '#treeList tr.dx-data-row'. Если строка не видна сразу — скроллит виртуализированный treeList до 30 шагов." },
-      { "title": "Открыть форму редактирования", "description": "machine_params_page.open_edit_state_form('auto-<ts>'): _select_row (клик по td[role='gridcell'] в первой ячейке для активации тулбара) → expect(edit_state_button).to_be_visible → click()." },
-      { "title": "Изменить имя на 'redact-auto-<ts>'", "description": "edit_form.edit_state_name('redact-auto-1748257215'): name_input.fill(new_name) + short_name_input.fill('redact-auto-1748257215-sn') + save_button.click()." },
-      { "title": "Проверить переименование", "description": "machine_params_page.assert_state_visible('redact-auto-<ts>') — строка с новым именем найдена." },
-      { "title": "Удалить состояние", "description": "machine_params_page.delete_state('redact-...'): _select_row → delete_state_button.click()." },
-      { "title": "Подтвердить удаление в диалоге 'Удаление записи'", "description": "dialog = .dx-overlay-content.dx-popup-normal с титулом 'Удаление записи'. Внутри ищем кнопку 'Да' (aria-label='Да' / .dx-button-text:text-is('Да')) → click(force=True). Ждём dialog.to_be_hidden(timeout=10000), при неудаче — повторный клик. + wait 2с для обновления грида." },
-      { "title": "Проверить, что состояния больше нет", "description": "assert_state_not_visible('redact-auto-<ts>'): expect(_find_row_in_tree(name)).to_have_count(0, timeout=20000)." }
+      {
+        "title": "Сгенерировать unique_state_name = 'auto-<unix-ts>'",
+        "description": "Например, 'auto-1748257215'. edited_state_name = 'redact-auto-1748257215'. allure.dynamic.parameter сохраняет имена в отчёт."
+      },
+      {
+        "title": "Открыть /user/login",
+        "description": "login_page.open()."
+      },
+      {
+        "title": "Переключить язык на RU",
+        "description": "login_page.switch_language_to_russian()."
+      },
+      {
+        "title": "Войти как Admin/123",
+        "description": "login_page.login('Admin', '123') + wait 2с. Фолбэк: login('admin', password)."
+      },
+      {
+        "title": "Перейти на /list/machineParams",
+        "description": "Если есть auth query — мержим; иначе machine_params_page.open() → goto machine_params_url."
+      },
+      {
+        "title": "Дождаться загрузки таблицы состояний",
+        "description": "machine_params_page.assert_loaded(): expect(url).to_match(r'.*/list/machineParams.*') + expect(loading_spinner='.ant-spin-spinning').to_have_count(0, 30с) + expect(get_by_text('Наименование', exact=True)).to_be_visible."
+      },
+      {
+        "title": "Нажать 'Добавить'",
+        "description": "machine_params_page.open_create_state_form(): new_state_button (div[role='button'][aria-label='Добавить']:visible / фолбэки) → click(). Возвращает MachineStateFormComponent (полностраничная форма)."
+      },
+      {
+        "title": "Дождаться загрузки формы создания",
+        "description": "MachineStateFormComponent.assert_loaded(): form_container.to_be_visible (контейнер '.FormContainer___QWwNX' или dx-layout-manager c полем 'Наименование'), name_input, short_name_input, save_button — все видимы."
+      },
+      {
+        "title": "Заполнить 'Наименование' = 'auto-<ts>'",
+        "description": "name_input.fill('auto-1748257215'). name_input находится по XPath: //*[contains(@class,'dx-field-item-label-text') and starts-with(normalize-space(.), 'Наименование')]/ancestor::div[contains(@class,'dx-field-item')][1]//input[contains(@class,'dx-texteditor-input')]."
+      },
+      {
+        "title": "Заполнить 'Краткое наименование' = 'auto-<ts>-sn'",
+        "description": "short_name_input.fill('auto-1748257215-sn') (обрезается до 32 символов)."
+      },
+      {
+        "title": "Выбрать тип = 'Состояние'",
+        "description": "_select_state_type_if_present(): clicks .dx-radiogroup .dx-radiobutton:has(.dx-item-content:has-text('Состояние')) — по умолчанию форма ставит тип 'Причина простоя', нужно явно переключить."
+      },
+      {
+        "title": "Нажать 'Сохранить'",
+        "description": "save_button.click() (на тулбаре полностраничной формы — div[role='button'][aria-label='Сохранить']:visible). _wait_form_closed_or_saved() ждёт смены URL (/new уходит) до 10с."
+      },
+      {
+        "title": "Проверить наличие состояния в таблице",
+        "description": "assert_state_visible('auto-<ts>'): _find_row_in_tree ищет строку в '.dx-treelist tr.dx-data-row:visible' / '.dx-datagrid tr.dx-data-row:visible' / '#treeList tr.dx-data-row'. Если строка не видна сразу — скроллит виртуализированный treeList до 30 шагов."
+      },
+      {
+        "title": "Открыть форму редактирования",
+        "description": "machine_params_page.open_edit_state_form('auto-<ts>'): _select_row (клик по td[role='gridcell'] в первой ячейке для активации тулбара) → expect(edit_state_button).to_be_visible → click()."
+      },
+      {
+        "title": "Изменить имя на 'redact-auto-<ts>'",
+        "description": "edit_form.edit_state_name('redact-auto-1748257215'): name_input.fill(new_name) + short_name_input.fill('redact-auto-1748257215-sn') + save_button.click()."
+      },
+      {
+        "title": "Проверить переименование",
+        "description": "machine_params_page.assert_state_visible('redact-auto-<ts>') — строка с новым именем найдена."
+      },
+      {
+        "title": "Удалить состояние",
+        "description": "machine_params_page.delete_state('redact-...'): _select_row → delete_state_button.click()."
+      },
+      {
+        "title": "Подтвердить удаление в диалоге 'Удаление записи'",
+        "description": "dialog = .dx-overlay-content.dx-popup-normal с титулом 'Удаление записи'. Внутри ищем кнопку 'Да' (aria-label='Да' / .dx-button-text:text-is('Да')) → click(force=True). Ждём dialog.to_be_hidden(timeout=10000), при неудаче — повторный клик. + wait 2с для обновления грида."
+      },
+      {
+        "title": "Проверить, что состояния больше нет",
+        "description": "assert_state_not_visible('redact-auto-<ts>'): expect(_find_row_in_tree(name)).to_have_count(0, timeout=20000)."
+      }
     ],
     "teardown": [
-      { "title": "При незавершённом удалении остаётся маркер", "description": "Префикс 'auto-' / 'redact-auto-' — для ручной зачистки." },
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
+      {
+        "title": "При незавершённом удалении остаётся маркер",
+        "description": "Префикс 'auto-' / 'redact-auto-' — для ручной зачистки."
+      },
+      {
+        "title": "Закрыть browser context",
+        "description": "pytest-playwright fixture `page` teardown."
+      }
     ]
   },
   {
@@ -603,62 +840,167 @@
     "displayName": "CRUD: создать/редактировать/удалить параметр оборудования",
     "description": "Полный CRUD-цикл для параметров оборудования (вкладка 'Параметры' страницы machineParams): авторизация → RU → переход на /list/machineParams → открыть вкладку 'Параметры' (span.dx-tab-text) → создать параметр 'auto-param-<unix-ts>' (Краткое наименование = 'auto-param-<ts>-sn', Единицы измерения = 'шт', Способ визуализации = 'Линейный') → проверить → отредактировать на 'redact-auto-param-<ts>' → проверить → удалить через диалог → проверить отсутствие. Форма параметра — модальный popup (.dx-overlay-content).",
     "setup": [
-      { "title": "Стенд доступен", "description": "https://localhost:8001/user/login возвращает 200." },
-      { "title": "Существует пользователь Admin/123", "description": "Либо TEST_USER_LOGIN/TEST_USER_PASSWORD." },
-      { "title": "Раздел MachineParams доступен и есть вкладка 'Параметры'", "description": "URL: https://localhost:8001/list/machineParams. Вкладка span.dx-tab-text с текстом 'Параметры'." }
+      {
+        "title": "Стенд доступен",
+        "description": "https://localhost:8001/user/login возвращает 200."
+      },
+      {
+        "title": "Существует пользователь Admin/123",
+        "description": "Либо TEST_USER_LOGIN/TEST_USER_PASSWORD."
+      },
+      {
+        "title": "Раздел MachineParams доступен и есть вкладка 'Параметры'",
+        "description": "URL: https://localhost:8001/list/machineParams. Вкладка span.dx-tab-text с текстом 'Параметры'."
+      }
     ],
     "steps": [
-      { "title": "Сгенерировать имена параметра", "description": "unique_parameter_name = 'auto-param-<unix-ts>', edited_parameter_name = 'redact-auto-param-<unix-ts>'." },
-      { "title": "Открыть /user/login", "description": "login_page.open()." },
-      { "title": "Переключить язык на RU", "description": "login_page.switch_language_to_russian()." },
-      { "title": "Войти как Admin/123", "description": "login_page.login('Admin', '123') + wait 2с. Фолбэк: login('admin', password)." },
-      { "title": "Перейти на /list/machineParams", "description": "С учётом auth query-параметров (merge) или machine_params_page.open()." },
-      { "title": "Дождаться загрузки таблицы состояний", "description": "machine_params_page.assert_loaded(): url + спиннер исчез + 'Наименование' видно." },
-      { "title": "Переключиться на вкладку 'Параметры'", "description": "machine_params_page.open_parameters_tab(): expect(page.locator('span.dx-tab-text', has_text='Параметры').first).to_be_visible(timeout=20000) → click() → ждём loading_spinner.to_have_count(0)." },
-      { "title": "Открыть форму создания параметра", "description": "machine_params_page.open_create_parameter_form(): open_parameters_tab() → expect(add_parameter_button = div[role='button'][aria-label='Добавить']:visible).to_be_visible → click(). Возвращает MachineStateFormComponent (попап)." },
-      { "title": "Заполнить 'Наименование' = 'auto-param-<ts>'", "description": "name_input.fill('auto-param-1748257215')." },
-      { "title": "Заполнить 'Краткое наименование' = 'auto-param-<ts>-sn'", "description": "short_name_input.fill('auto-param-1748257215-sn'[:32])." },
-      { "title": "Заполнить 'Единицы измерения' = 'шт'", "description": "measure_unit_input.fill('шт'). Селекторы: input[name='measureUnit']:visible / input[name='unit'] / .dx-field-item:has-text('Единицы измерения') .dx-texteditor-input." },
-      { "title": "Выбрать 'Способ визуализации' = 'Линейный'", "description": "_select_linear_visualization_if_present(): открыть dropdown (visualization_selector.click() / visualization_open_button / клик на 20px ниже селектора), дождаться .dx-overlay-content:visible:has(.dx-list), кликнуть .dx-list-item .dx-item-content:text-is('Линейный')." },
-      { "title": "Нажать 'Сохранить'", "description": "save_button.click() (в активном попапе — get_by_role('button', name='Сохранить') или button[type='submit'] внутри active_popup). _wait_form_closed_or_saved() ждёт скрытия popup (timeout 15с)." },
-      { "title": "Проверить наличие параметра", "description": "machine_params_page.open_parameters_tab() (переход обратно во вкладку) → assert_parameter_visible('auto-param-<ts>'): _find_row_in_tree находит строку с виртуальным скроллом." },
-      { "title": "Открыть форму редактирования", "description": "machine_params_page.open_edit_parameter_form('auto-param-<ts>'): open_parameters_tab → _select_row(row) → expect(edit_parameter_button).to_be_visible → click(force=True). force=True потому что DevExtreme может оставлять кнопку в визуальном dx-state-disabled." },
-      { "title": "Изменить имя на 'redact-auto-param-<ts>'", "description": "edit_form.edit_parameter_name('redact-auto-param-1748257215'): name_input.fill + short_name_input.fill + save_button.click()." },
-      { "title": "Проверить переименование", "description": "open_parameters_tab() → assert_parameter_visible('redact-auto-param-<ts>')." },
-      { "title": "Удалить параметр", "description": "machine_params_page.delete_parameter('redact-...'): open_parameters_tab → _select_row → delete_parameter_button.click(force=True) → dialog 'Удаление записи' → клик 'Да' (.dx-dialog-buttons .dx-button .dx-button-text:text-is('Да')) → expect(dialog).to_be_hidden(timeout=10000)." },
-      { "title": "Проверить, что параметра больше нет", "description": "open_parameters_tab() → assert_state_not_visible('redact-auto-param-<ts>'): expect(_find_row_in_tree).to_have_count(0, timeout=20000)." }
+      {
+        "title": "Сгенерировать имена параметра",
+        "description": "unique_parameter_name = 'auto-param-<unix-ts>', edited_parameter_name = 'redact-auto-param-<unix-ts>'."
+      },
+      {
+        "title": "Открыть /user/login",
+        "description": "login_page.open()."
+      },
+      {
+        "title": "Переключить язык на RU",
+        "description": "login_page.switch_language_to_russian()."
+      },
+      {
+        "title": "Войти как Admin/123",
+        "description": "login_page.login('Admin', '123') + wait 2с. Фолбэк: login('admin', password)."
+      },
+      {
+        "title": "Перейти на /list/machineParams",
+        "description": "С учётом auth query-параметров (merge) или machine_params_page.open()."
+      },
+      {
+        "title": "Дождаться загрузки таблицы состояний",
+        "description": "machine_params_page.assert_loaded(): url + спиннер исчез + 'Наименование' видно."
+      },
+      {
+        "title": "Переключиться на вкладку 'Параметры'",
+        "description": "machine_params_page.open_parameters_tab(): expect(page.locator('span.dx-tab-text', has_text='Параметры').first).to_be_visible(timeout=20000) → click() → ждём loading_spinner.to_have_count(0)."
+      },
+      {
+        "title": "Открыть форму создания параметра",
+        "description": "machine_params_page.open_create_parameter_form(): open_parameters_tab() → expect(add_parameter_button = div[role='button'][aria-label='Добавить']:visible).to_be_visible → click(). Возвращает MachineStateFormComponent (попап)."
+      },
+      {
+        "title": "Заполнить 'Наименование' = 'auto-param-<ts>'",
+        "description": "name_input.fill('auto-param-1748257215')."
+      },
+      {
+        "title": "Заполнить 'Краткое наименование' = 'auto-param-<ts>-sn'",
+        "description": "short_name_input.fill('auto-param-1748257215-sn'[:32])."
+      },
+      {
+        "title": "Заполнить 'Единицы измерения' = 'шт'",
+        "description": "measure_unit_input.fill('шт'). Селекторы: input[name='measureUnit']:visible / input[name='unit'] / .dx-field-item:has-text('Единицы измерения') .dx-texteditor-input."
+      },
+      {
+        "title": "Выбрать 'Способ визуализации' = 'Линейный'",
+        "description": "_select_linear_visualization_if_present(): открыть dropdown (visualization_selector.click() / visualization_open_button / клик на 20px ниже селектора), дождаться .dx-overlay-content:visible:has(.dx-list), кликнуть .dx-list-item .dx-item-content:text-is('Линейный')."
+      },
+      {
+        "title": "Нажать 'Сохранить'",
+        "description": "save_button.click() (в активном попапе — get_by_role('button', name='Сохранить') или button[type='submit'] внутри active_popup). _wait_form_closed_or_saved() ждёт скрытия popup (timeout 15с)."
+      },
+      {
+        "title": "Проверить наличие параметра",
+        "description": "machine_params_page.open_parameters_tab() (переход обратно во вкладку) → assert_parameter_visible('auto-param-<ts>'): _find_row_in_tree находит строку с виртуальным скроллом."
+      },
+      {
+        "title": "Открыть форму редактирования",
+        "description": "machine_params_page.open_edit_parameter_form('auto-param-<ts>'): open_parameters_tab → _select_row(row) → expect(edit_parameter_button).to_be_visible → click(force=True). force=True потому что DevExtreme может оставлять кнопку в визуальном dx-state-disabled."
+      },
+      {
+        "title": "Изменить имя на 'redact-auto-param-<ts>'",
+        "description": "edit_form.edit_parameter_name('redact-auto-param-1748257215'): name_input.fill + short_name_input.fill + save_button.click()."
+      },
+      {
+        "title": "Проверить переименование",
+        "description": "open_parameters_tab() → assert_parameter_visible('redact-auto-param-<ts>')."
+      },
+      {
+        "title": "Удалить параметр",
+        "description": "machine_params_page.delete_parameter('redact-...'): open_parameters_tab → _select_row → delete_parameter_button.click(force=True) → dialog 'Удаление записи' → клик 'Да' (.dx-dialog-buttons .dx-button .dx-button-text:text-is('Да')) → expect(dialog).to_be_hidden(timeout=10000)."
+      },
+      {
+        "title": "Проверить, что параметра больше нет",
+        "description": "open_parameters_tab() → assert_state_not_visible('redact-auto-param-<ts>'): expect(_find_row_in_tree).to_have_count(0, timeout=20000)."
+      }
     ],
     "teardown": [
-      { "title": "При незавершённом удалении остаётся маркер", "description": "Префикс 'auto-param-' / 'redact-auto-param-' — для ручной зачистки." },
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
+      {
+        "title": "При незавершённом удалении остаётся маркер",
+        "description": "Префикс 'auto-param-' / 'redact-auto-param-' — для ручной зачистки."
+      },
+      {
+        "title": "Закрыть browser context",
+        "description": "pytest-playwright fixture `page` teardown."
+      }
     ]
   },
   {
-    "externalId": "ui.production_units.full_crud_destructive_flagged",
-    "pytestId": "tests.test_production_units_crud_ui::test_production_units_full_crud_destructive_flagged",
-    "classname": "ProductionUnits",
-    "displayName": "CRUD: создать production unit и удалить (destructive по флагу)",
-    "description": "Полный CRUD: создаём production unit с Code = 'AT-<unix-ts>' (макс 18 символов), Name = 'CRUD-<unix-ts>', Type ≠ Enterprise, Parent (первый доступный). Сохраняем через save_until_persisted. Проверяем карточку по id. Инициируем удаление (Delete на карточке или из списка). Под флагом RUN_DESTRUCTIVE_PRODUCTION_UNITS_CRUD=true — подтверждает удаление; без флага — отменяет диалог.",
+    "externalId": "ui.ipm_setup.preparation",
+    "pytestId": "tests.test_ipm_setup::test_ipm_preparation_full_setup",
+    "classname": "IpmSetup",
+    "displayName": "Подготовка стенда для тестирования ИПМ",
+    "description": "Предварительные шаги перед тестами ИПМ: Web Client API (:8089) создаёт персонала с табельным номером, станок Universal, разблокирует протокол и назначает роль; UI (:8001) включает автоподключение устройств в /list/devices; UI ИПМ (:8002) — окно /imp/login, вход по табельному номеру в режиме ИПМ.",
     "setup": [
-      { "title": "Раздел Production units открыт", "description": "После ProductionUnitsPage.open()." },
-      { "title": "Доступны валидный Type и Parent", "description": "В справочниках есть хотя бы один не-'Enterprise' Type и один Parent." }
+      {
+        "title": "Web Client API доступен",
+        "description": "http://127.0.0.1:8089 (env WEB_CLIENT_API_URL). Заголовок user-id: 1 (env WEB_API_USER_ID)."
+      },
+      {
+        "title": "Web-client UI доступен",
+        "description": "https://localhost:8001/user/login, пользователь Admin/123."
+      },
+      {
+        "title": "ИПМ доступен",
+        "description": "http://localhost:8002 (env IPM_URL). Авторизация по табельному номеру на /imp/login."
+      }
     ],
     "steps": [
-      { "title": "Открыть форму создания", "description": "production_units_page.open_create_form(). assert True." },
-      { "title": "Сгенерировать suffix = str(int(time.time()))", "description": "code = 'AT-<suffix>'[:18], name = 'CRUD-<suffix>'. Например: code='AT-1748257215', name='CRUD-1748257215'." },
-      { "title": "Заполнить Code и Name", "description": "fill_code_and_name('AT-1748257215', 'CRUD-1748257215')." },
-      { "title": "Выбрать Type ≠ 'Enterprise' и Parent", "description": "fill_mandatory_selects_for_new_unit(). Возвращает (t_ok, p_ok, s_ok); assert t_ok and p_ok." },
-      { "title": "Сохранить с ретраями", "description": "save_until_persisted(). Фолбэк: recover_unit_id_from_list(code, name)." },
-      { "title": "Получить id и убедиться, что != '0'", "description": "uid = current_unit_id(). assert uid and uid != '0'." },
-      { "title": "Открыть карточку по id и проверить Code", "description": "open_unit_by_id(uid) → expect(page.locator('#ProductionUnit_Code')).to_have_value('AT-1748257215', timeout=15_000)." },
-      { "title": "Инициировать удаление (до 3 попыток)", "description": "В цикле: open_unit_by_id(uid) → trigger_delete_on_card() (Delete на карточке); фолбэк — delete_unit_from_list_by_text(code, name). assert deleted." },
-      { "title": "Проверить, что появился диалог", "description": "production_units_page.delete_dialog_visible() — .ant-modal или [role='dialog']. assert visible." },
-      { "title": "Подтвердить / отменить по флагу", "description": "Если RUN_DESTRUCTIVE_PRODUCTION_UNITS_CRUD=true → confirm_delete_dialog() (клик 'Delete'/'OK'/.ant-btn-dangerous). Иначе → cancel_delete_dialog() (клик 'Cancel'). Затем apply_changes_if_present()." },
-      { "title": "Проверить итоговое состояние", "description": "open_unit_by_id(uid). Под флагом: либо карточка не открылась, либо открылась, но #ProductionUnit_Code != исходному code → assert. Без флага: expect(page.locator('#ProductionUnit_Code')).to_have_value('AT-1748257215') — запись на месте." }
+      {
+        "title": "API: создать персонала",
+        "description": "PUT /api/Personnel с Number (только цифры), IsCreateWorker=true → WorkerId."
+      },
+      {
+        "title": "API: создать станок",
+        "description": "POST /api/AddMachine, протокол Type=23 Universal, DeptId=2."
+      },
+      {
+        "title": "API: разблокировать протокол",
+        "description": "Найти новый protocol ID в GET /api/MachineProtocols, PUT /api/MachineProtocols с IsBlocked=false."
+      },
+      {
+        "title": "API: назначить роль",
+        "description": "PATCH /api/WorkerRolesOnMachines: WorkerRoleId=1, MachineID, WorkerID."
+      },
+      {
+        "title": "UI: логин в web-client",
+        "description": "login_page.open() → login(Admin, 123)."
+      },
+      {
+        "title": "UI: включить автоподключение устройств",
+        "description": "devices_page.open() → enable_auto_connect_new_devices() на /list/devices."
+      },
+      {
+        "title": "UI: проверить окно авторизации ИПМ",
+        "description": "ipm_login_page.open() → assert_auth_window() (/imp/login)."
+      },
+      {
+        "title": "UI: войти в ИПМ",
+        "description": "select ipm radio → fill tab number → submit → assert_logged_in."
+      }
     ],
     "teardown": [
-      { "title": "Без флага запись остаётся", "description": "Маркер: code='AT-*' / name='CRUD-*'. Для дев-стенда." },
-      { "title": "Закрыть browser context", "description": "pytest-playwright fixture `page` teardown." }
+      {
+        "title": "Данные остаются на стенде",
+        "description": "Персонал/станок с префиксом WR/M/MC auto — для последующих тестов ИПМ или ручной зачистки."
+      }
     ]
   }
 ]

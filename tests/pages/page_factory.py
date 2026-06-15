@@ -5,6 +5,7 @@ PageFactory: единая точка создания Page Object / Page Compone
 from playwright.sync_api import Page
 
 from tests.pages.components.machine_state_form_component import MachineStateFormComponent
+from tests.pages.ipm_login_page import IpmLoginPage
 from tests.pages.login_page import LoginPage
 from tests.pages.machine_params_page import MachineParamsPage
 from tests.pages.roles_page import RolesPage
@@ -22,6 +23,10 @@ class PageFactory:
     @staticmethod
     def roles_page(page: Page, roles_url: str) -> RolesPage:
         return RolesPage(page=page, roles_url=roles_url)
+
+    @staticmethod
+    def ipm_login_page(page: Page, ipm_url: str) -> IpmLoginPage:
+        return IpmLoginPage(page=page, ipm_url=ipm_url)
 
     @staticmethod
     def machine_state_form_component(page: Page) -> MachineStateFormComponent:

@@ -2,7 +2,6 @@
 Новый CRUD-сценарий: Directories → Devices (DevicesCRUD).
 
 UI устройств — список .ant-list-item (не таблица как в Production units).
-Сценарий повторяет проверенные шаги из test_devices_crud_ui.
 """
 
 from __future__ import annotations

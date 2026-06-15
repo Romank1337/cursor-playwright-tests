@@ -132,6 +132,40 @@ class DevicesPage:
             self.page.goto(target, wait_until="domcontentloaded")
             self.page.wait_for_timeout(700)
 
+    @property
+    def auto_connect_new_devices_switch(self):
+        label = self.page.get_by_text(
+            re.compile(
+                r"Allow auto-connection of new devices|Разрешать автоподключение новых устройств",
+                re.I,
+            )
+        ).first
+        row = label.locator(
+            "xpath=ancestor::*[self::label or contains(@class,'ant-form-item')][1]"
+        )
+        switch = row.locator(".ant-switch").first if row.count() else self.page.locator(".ant-switch").first
+        if switch.count() == 0:
+            switch = label.locator("xpath=following::span[contains(@class,'ant-switch')][1]")
+        return switch
+
+    def enable_auto_connect_new_devices(self) -> None:
+        """Включить «Разрешать автоподключение новых устройств» и применить изменения."""
+        label = self.page.get_by_text(
+            re.compile(
+                r"Allow auto-connection of new devices|Разрешать автоподключение новых устройств",
+                re.I,
+            )
+        ).first
+        expect(label).to_be_visible(timeout=20_000)
+
+        switch = self.auto_connect_new_devices_switch
+        if switch.get_attribute("aria-checked") != "true":
+            switch.click()
+            self.page.wait_for_timeout(500)
+            self.apply_changes_if_present()
+
+        expect(switch).to_have_attribute("aria-checked", "true", timeout=5_000)
+
     def go_to_list(self) -> None:
         target = f"{self._base()}{self.LIST_PATH}"
         self.page.goto(target, wait_until="domcontentloaded")

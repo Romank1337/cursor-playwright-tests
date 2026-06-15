@@ -45,6 +45,28 @@ allure serve allure-results
 - `TEST_USER_LOGIN` — логин (по умолчанию `Admin`)
 - `TEST_USER_PASSWORD` — пароль (по умолчанию `123`)
 - `SUCCESS_URL_REGEX` — regex URL после успешного входа
+- `WEB_CLIENT_API_URL` — Web Client Web API для подготовки ИПМ (по умолчанию `http://127.0.0.1:8089`)
+- `WEB_API_USER_ID` — заголовок `user-id` для API :8089 (по умолчанию `1`)
+- `IPM_URL` — адрес ИПМ (по умолчанию `http://localhost:8002`)
+- `IPM_MACHINE_DEPT_ID` — DeptId станка при API-подготовке (по умолчанию `2`)
+- `IPM_WORKER_ROLE_ID` — WorkerRoleId при назначении роли (по умолчанию `1`)
+
+### Подготовка стенда для тестов ИПМ
+
+Предварительный сценарий (API + UI) описан в `tests/test_ipm_setup.py`:
+
+```powershell
+.\.venv\Scripts\python -m pytest -m ipm_setup -v
+```
+
+Шаги: персонал и станок через API :8089 → автоподключение устройств на `:8001/list/devices` → вход в ИПМ на `:8002` по табельному номеру.
+
+Связанные модули:
+
+- `tests/api/ipm_setup_client.py` — API-цикл подготовки
+- `tests/pages/ipm_login_page.py` — Page Object окна авторизации ИПМ
+- `tests/pages/devices_page.py` — `enable_auto_connect_new_devices()`
+- фикстура `ipm_backend_setup` в `conftest.py` — только API-часть для будущих тестов ИПМ
 
 Пример для PowerShell:
 
@@ -68,7 +90,7 @@ $env:SUCCESS_URL_REGEX=".*monitoring/realtime\\?deptId=109&presetId=2.*"
 - Namespace: **UI/Smoke** (рядом с уже существующим `API/Smoke`)
 
 В дереве автотестов MDC появится узел `UI → Smoke`, в который попадут
-все 22 UI-теста этого репо.
+все UI-теста этого репо (см. `pytest --collect-only`).
 
 ### Что уже сделано в коде
 
@@ -95,7 +117,7 @@ $env:SUCCESS_URL_REGEX=".*monitoring/realtime\\?deptId=109&presetId=2.*"
 Обходной путь, который реально работает на этом TMS, — **прямой publisher
 через REST API v2**, см. `tools/testit_publish_ui_smoke.ps1`. Он:
 
-- читает 22 автотеста из `tools/testit_ui_smoke_autotests.json`,
+- читает автотесты из `tools/testit_ui_smoke_autotests.json`,
 - создаёт/обновляет каждый через `POST/PUT /api/v2/autoTests`,
 - идемпотентен (повторный запуск только обновит без дублей),
 - не зависит от версии pip-клиента.
@@ -108,7 +130,7 @@ $env:SUCCESS_URL_REGEX=".*monitoring/realtime\\?deptId=109&presetId=2.*"
 
 После этого по адресу
 `https://testit.zyfra.com/projects/3117/autotests?type=Namespace&namespace=UI/Smoke`
-видны все 22 теста, разнесённые по подгруппам Login/Devices/Personnel/ProductionUnits.
+видны тесты, разнесённые по подгруппам Login/DevicesCRUD/Personnel/ProductionUnitsCRUD и др.
 
 > Результаты прогона (passed/failed/durations) этот publisher НЕ заливает —
 > только определения автотестов. Если потребуется ещё и заливать результаты,
@@ -143,7 +165,7 @@ $env:SUCCESS_URL_REGEX=".*monitoring/realtime\\?deptId=109&presetId=2.*"
 Сразу после этого по адресу
 `https://testit.zyfra.com/projects/3117/autotests?type=Namespace&namespace=UI/Smoke`
 будет виден узел `UI / Smoke`. После полного прогона `pytest --testit` туда
-добавятся все 22 настоящих теста; плейсхолдер можно удалить руками в TMS.
+добавятся все тесты из репозитория; плейсхолдер можно удалить руками в TMS.
 
 ### Шаг 3 — узнать `configurationId` для проекта MDC
 
@@ -187,7 +209,7 @@ $env:TMS_TEST_RUN_ID = ""   # пусто = адаптер сам создаст 
 ```
 
 После прогона в `https://testit.zyfra.com/projects/3117/autotests?type=Namespace&namespace=UI/Smoke`
-появятся все 22 теста, привязанные к свежесозданному TestRun (или к указанному `TMS_TEST_RUN_ID`).
+появятся тесты, привязанные к свежесозданному TestRun (или к указанному `TMS_TEST_RUN_ID`).
 
 ### Идентификаторы автотестов
 
