@@ -9,8 +9,11 @@ import pytest
 from playwright.sync_api import sync_playwright
 
 from tests.api.ipm_setup_client import IpmBackendSetup, prepare_ipm_backend
+from tests.helpers.ipm_flow import prepare_and_login_ipm
 from tests.pages.devices_page import DevicesPage
 from tests.pages.ipm_login_page import IpmLoginPage
+from tests.pages.ipm_machine_page import IpmMachinePage
+from tests.pages.ipm_machines_page import IpmMachinesPage
 from tests.pages.login_page import LoginPage
 from tests.pages.machine_params_page import MachineParamsPage
 from tests.pages.page_factory import PageFactory
@@ -159,6 +162,42 @@ def production_units_page(page, login_url: str, credentials: tuple[str, str]) ->
 @pytest.fixture()
 def ipm_login_page(page, ipm_url: str) -> IpmLoginPage:
     return IpmLoginPage(page=page, ipm_url=ipm_url)
+
+
+@pytest.fixture()
+def ipm_machines_page(page) -> IpmMachinesPage:
+    return IpmMachinesPage(page=page)
+
+
+@pytest.fixture()
+def ipm_machine_page(page) -> IpmMachinePage:
+    return IpmMachinePage(page=page)
+
+
+@pytest.fixture()
+def ipm_ready(
+    login_page,
+    devices_page,
+    ipm_login_page,
+    credentials,
+    web_client_api_url: str,
+    web_api_user_id: str,
+    ipm_dept_id: int,
+    ipm_worker_role_id: int,
+) -> IpmBackendSetup:
+    """API-подготовка + автоподключение устройств + вход в ИПМ."""
+    username, password = credentials
+    return prepare_and_login_ipm(
+        login_page=login_page,
+        devices_page=devices_page,
+        ipm_login_page=ipm_login_page,
+        username=username,
+        password=password,
+        web_client_api_url=web_client_api_url,
+        web_api_user_id=web_api_user_id,
+        ipm_dept_id=ipm_dept_id,
+        ipm_worker_role_id=ipm_worker_role_id,
+    )
 
 
 @pytest.fixture()

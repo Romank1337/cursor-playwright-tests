@@ -980,6 +980,10 @@
         "description": "PATCH /api/WorkerRolesOnMachines: WorkerRoleId=1, MachineID, WorkerID."
       },
       {
+        "title": "API: привязать причину простоя",
+        "description": "PATCH /api/ParamInMachine: MachineParamId=11, MachineParamType=DownTimeCause, IsForTransfer=true."
+      },
+      {
         "title": "UI: логин в web-client",
         "description": "login_page.open() → login(Admin, 123)."
       },
@@ -1000,6 +1004,59 @@
       {
         "title": "Данные остаются на стенде",
         "description": "Персонал/станок с префиксом WR/M/MC auto — для последующих тестов ИПМ или ручной зачистки."
+      }
+    ]
+  },
+  {
+    "externalId": "ui.ipm.downtime_cause_select",
+    "pytestId": "tests.test_ipm_downtime::test_ipm_select_downtime_cause",
+    "classname": "Ipm",
+    "displayName": "ИПМ: выбрать причину простоя на станке",
+    "description": "Функциональный тест ИПМ после подготовки (fixture ipm_ready): на http://localhost:8002 выбрать карточку созданного станка (.ant-card-small → cardChecked) → «Применить» (#machines button) → вкладка «Причина простоя» → выбрать причину (.reasonItem, MachineParamId=11) → «Выбрать» → проверить уведомление и отображение причины в панели.",
+    "setup": [
+      {
+        "title": "Подготовка стенда (ipm_ready)",
+        "description": "API :8089 — персонал, станок, протокол, роль, ParamInMachine DownTimeCause; UI :8001 — автоподключение устройств; UI :8002 — вход по табельному номеру."
+      },
+      {
+        "title": "ИПМ доступен",
+        "description": "http://localhost:8002 (env IPM_URL)."
+      }
+    ],
+    "steps": [
+      {
+        "title": "Проверить вход в ИПМ",
+        "description": "expect URL /imp/, на экране видна карточка созданного станка (machine_short_name)."
+      },
+      {
+        "title": "Выбрать карточку станка",
+        "description": "Клик .ant-card-small с machine_short_name → expect class cardChecked."
+      },
+      {
+        "title": "Нажать «Применить»",
+        "description": "#machines button (4-я кнопка) enabled → click → переход на /imp/."
+      },
+      {
+        "title": "Открыть вкладку «Причина простоя»",
+        "description": "get_by_role('tab', Причина простоя) → panel-downtime visible → reasonItem visible."
+      },
+      {
+        "title": "Выбрать причину простоя",
+        "description": "Клик .reasonItem (первая привязанная причина, напр. «Нет ПП») → кнопка «Выбрать» enabled."
+      },
+      {
+        "title": "Подтвердить выбор",
+        "description": "Клик «Выбрать» → expect ant-notification с текстом причины (назначена/выбрана)."
+      },
+      {
+        "title": "Проверить отображение причины",
+        "description": "expect panel-downtime содержит имя выбранной причины."
+      }
+    ],
+    "teardown": [
+      {
+        "title": "Закрыть browser context",
+        "description": "pytest-playwright fixture `page` teardown."
       }
     ]
   }

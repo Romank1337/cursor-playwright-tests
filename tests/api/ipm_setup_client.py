@@ -6,6 +6,7 @@
 2. POST /api/AddMachine — станок с протоколом Universal (Type 23)
 3. PUT /api/MachineProtocols — разблокировка протокола (IsBlocked=false)
 4. PATCH /api/WorkerRolesOnMachines — назначение роли работнику на станке
+5. PATCH /api/ParamInMachine — привязка причины простоя к созданному станку
 """
 
 from __future__ import annotations
@@ -42,6 +43,9 @@ def prepare_ipm_backend(
     dept_id: int = 2,
     worker_role_id: int = 1,
     protocol_type: int = 23,
+    down_time_cause_machine_param_id: int = 11,
+    down_time_cause_service_code: int = 1,
+    down_time_cause_source_protocol_type: int = 2,
     timeout_sec: float = 30,
 ) -> IpmBackendSetup:
     headers = {
@@ -180,6 +184,30 @@ def prepare_ipm_backend(
     )
     if role_resp.status_code != 200:
         raise RuntimeError(f"Worker role assign failed: {role_resp.text}")
+
+    down_time_cause_body = {
+        "ParamInMachineList": [
+            {
+                "Id": 0,
+                "MachineId": machine_id,
+                "MachineParamId": down_time_cause_machine_param_id,
+                "MachineParamType": "DownTimeCause",
+                "ServiceCode": down_time_cause_service_code,
+                "IsForTransfer": True,
+                "SourceProtocolType": down_time_cause_source_protocol_type,
+            }
+        ]
+    }
+    down_time_cause_resp = requests.patch(
+        f"{base_url}/api/ParamInMachine",
+        json=down_time_cause_body,
+        headers=headers,
+        timeout=timeout_sec,
+    )
+    down_time_cause_resp.raise_for_status()
+    down_time_cause_data = down_time_cause_resp.json()
+    if not down_time_cause_data.get("Success"):
+        raise RuntimeError(f"DownTimeCause bind failed: {down_time_cause_data}")
 
     return IpmBackendSetup(
         suffix=suffix,

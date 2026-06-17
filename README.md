@@ -22,6 +22,25 @@ python -m venv .venv
 .\.venv\Scripts\python -m pytest -m e2e
 ```
 
+### Раздельный запуск (рекомендуется)
+
+ИПМ-сценарии лучше запускать отдельно от общего UI-smoke.
+
+```powershell
+# Только ИПМ
+.\.venv\Scripts\python -m pytest -m ipm_setup -v
+
+# Все UI-тесты, кроме ИПМ
+.\.venv\Scripts\python -m pytest -m "e2e and not ipm_setup" -v
+```
+
+Готовые скрипты:
+
+```powershell
+.\tools\run_ipm_tests.ps1
+.\tools\run_ui_without_ipm.ps1
+```
+
 ## Allure-отчёт
 
 1) Запуск тестов с сохранением результатов Allure:
